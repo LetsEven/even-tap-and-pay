@@ -42,28 +42,25 @@ export default function CardSelectionPage() {
   const baseAmount = parseFloat(searchParams.get("baseAmount") || "0");
   const tipAmount = parseFloat(searchParams.get("tipAmount") || "0");
   const ivaTip = parseFloat(searchParams.get("ivaTip") || "0");
-  const xquisitoCommissionClient = parseFloat(
-    searchParams.get("xquisitoCommissionClient") || "0"
+  const evenCommissionClient = parseFloat(
+    searchParams.get("evenCommissionClient") || "0",
   );
-  const ivaXquisitoClient = parseFloat(
-    searchParams.get("ivaXquisitoClient") || "0"
+  const ivaEvenClient = parseFloat(searchParams.get("ivaEvenClient") || "0");
+  const evenCommissionRestaurant = parseFloat(
+    searchParams.get("evenCommissionRestaurant") || "0",
   );
-  const xquisitoCommissionRestaurant = parseFloat(
-    searchParams.get("xquisitoCommissionRestaurant") || "0"
-  );
-  const xquisitoCommissionTotal = parseFloat(
-    searchParams.get("xquisitoCommissionTotal") || "0"
+  const evenCommissionTotal = parseFloat(
+    searchParams.get("evenCommissionTotal") || "0",
   );
   const selectedItemsParam = searchParams.get("selectedItems");
 
-  const xquisitoClientCharge = xquisitoCommissionClient + ivaXquisitoClient;
-  const ivaXquisitoRestaurant = xquisitoCommissionRestaurant * 0.16;
-  const xquisitoRestaurantCharge =
-    xquisitoCommissionRestaurant + ivaXquisitoRestaurant;
+  const evenClientCharge = evenCommissionClient + ivaEvenClient;
+  const ivaEvenRestaurant = evenCommissionRestaurant * 0.16;
+  const evenRestaurantCharge = evenCommissionRestaurant + ivaEvenRestaurant;
   const subtotalForCommission = baseAmount + tipAmount;
-  const xquisitoRateApplied =
+  const evenRateApplied =
     subtotalForCommission > 0
-      ? (xquisitoCommissionTotal / subtotalForCommission) * 100
+      ? (evenCommissionTotal / subtotalForCommission) * 100
       : 0;
 
   // Get name from profile or localStorage for guests
@@ -72,7 +69,7 @@ export default function CardSelectionPage() {
       ? `${profile.firstName} ${profile.lastName}`
       : profile?.firstName || "") ||
     (typeof window !== "undefined"
-      ? localStorage.getItem("xquisito-guest-name") || ""
+      ? localStorage.getItem("even-guest-name") || ""
       : "");
 
   const [name, setName] = useState(effectiveName);
@@ -126,7 +123,7 @@ export default function CardSelectionPage() {
 
     if (paymentType === "select-items" && selectedItemsParam) {
       setSelectedItems(
-        selectedItemsParam.split(",").filter((item) => item.trim() !== "")
+        selectedItemsParam.split(",").filter((item) => item.trim() !== ""),
       );
     }
   }, [profile, paymentType, selectedItemsParam]);
@@ -161,7 +158,7 @@ export default function CardSelectionPage() {
 
   const dishes = state.order?.items || [];
   const unpaidDishes = dishes.filter(
-    (dish) => dish.payment_status === "not_paid" || !dish.payment_status
+    (dish) => dish.payment_status === "not_paid" || !dish.payment_status,
   );
 
   useEffect(() => {
@@ -182,7 +179,7 @@ export default function CardSelectionPage() {
 
     // Obtener el tipo de tarjeta seleccionada
     const selectedMethod = allPaymentMethods.find(
-      (pm) => pm.id === selectedPaymentMethodId
+      (pm) => pm.id === selectedPaymentMethodId,
     );
     const cardBrand = selectedMethod?.cardBrand;
 
@@ -240,7 +237,7 @@ export default function CardSelectionPage() {
       // Obtener guest_id del contexto o de localStorage
       let currentGuestId = guestId;
       if (!currentGuestId && !user?.id) {
-        currentGuestId = localStorage.getItem("xquisito-guest-id");
+        currentGuestId = localStorage.getItem("even-guest-id");
       }
 
       // guest_name debe contener el nombre visible, sea invitado o usuario registrado
@@ -297,7 +294,7 @@ export default function CardSelectionPage() {
 
       // Guardar datos del pago para payment-success
       const selectedMethod = allPaymentMethods.find(
-        (pm) => pm.id === selectedPaymentMethodId
+        (pm) => pm.id === selectedPaymentMethodId,
       );
 
       const paymentData = {
@@ -308,10 +305,10 @@ export default function CardSelectionPage() {
         baseAmount: baseAmount,
         tipAmount: tipAmount,
         ivaTip: ivaTip,
-        xquisitoCommissionClient: xquisitoCommissionClient,
-        xquisitoCommissionRestaurant: xquisitoCommissionRestaurant,
-        ivaXquisitoClient: ivaXquisitoClient,
-        ivaXquisitoRestaurant: ivaXquisitoRestaurant,
+        evenCommissionClient: evenCommissionClient,
+        evenCommissionRestaurant: evenCommissionRestaurant,
+        ivaEvenClient: ivaEvenClient,
+        ivaEvenRestaurant: ivaEvenRestaurant,
         paymentType: paymentType,
         userName: profile?.firstName || name,
         cardLast4: selectedMethod?.lastFourDigits,
@@ -326,8 +323,8 @@ export default function CardSelectionPage() {
 
       // Guardar en localStorage
       localStorage.setItem(
-        "xquisito-completed-payment",
-        JSON.stringify(paymentData)
+        "even-completed-payment",
+        JSON.stringify(paymentData),
       );
       console.log("💾 Payment data saved to localStorage");
 
@@ -352,20 +349,20 @@ export default function CardSelectionPage() {
             base_amount: baseAmount,
             tip_amount: tipAmount,
             iva_tip: ivaTip,
-            xquisito_commission_total: xquisitoCommissionTotal,
-            xquisito_commission_client: xquisitoCommissionClient,
-            xquisito_commission_restaurant: xquisitoCommissionRestaurant,
-            iva_xquisito_client: ivaXquisitoClient,
-            iva_xquisito_restaurant: ivaXquisitoRestaurant,
-            xquisito_client_charge: xquisitoClientCharge,
-            xquisito_restaurant_charge: xquisitoRestaurantCharge,
-            xquisito_rate_applied: xquisitoRateApplied,
+            even_commission_total: evenCommissionTotal,
+            even_commission_client: evenCommissionClient,
+            even_commission_restaurant: evenCommissionRestaurant,
+            iva_even_client: ivaEvenClient,
+            iva_even_restaurant: ivaEvenRestaurant,
+            even_client_charge: evenClientCharge,
+            even_restaurant_charge: evenRestaurantCharge,
+            even_rate_applied: evenRateApplied,
             total_amount_charged: totalAmountCharged,
             subtotal_for_commission: subtotalForCommission,
             currency: "MXN",
           });
           console.log(
-            "✅ Payment transaction recorded successfully (background)"
+            "✅ Payment transaction recorded successfully (background)",
           );
         } catch (transactionError) {
           console.error("❌ Error in background operations:", transactionError);
@@ -398,7 +395,7 @@ export default function CardSelectionPage() {
       // Si se seleccionó la tarjeta del sistema, procesar pago directamente
       if (selectedPaymentMethodId === "system-default-card") {
         console.log(
-          "💳 Sistema: Procesando pago con tarjeta del sistema (sin cargo real)"
+          "💳 Sistema: Procesando pago con tarjeta del sistema (sin cargo real)",
         );
 
         const mockPaymentId = `system-payment-${Date.now()}`;
@@ -436,10 +433,10 @@ export default function CardSelectionPage() {
       baseAmount: baseAmount.toString(),
       tipAmount: tipAmount.toString(),
       ivaTip: ivaTip.toString(),
-      xquisitoCommissionClient: xquisitoCommissionClient.toString(),
-      ivaXquisitoClient: ivaXquisitoClient.toString(),
-      xquisitoCommissionRestaurant: xquisitoCommissionRestaurant.toString(),
-      xquisitoCommissionTotal: xquisitoCommissionTotal.toString(),
+      evenCommissionClient: evenCommissionClient.toString(),
+      ivaEvenClient: ivaEvenClient.toString(),
+      evenCommissionRestaurant: evenCommissionRestaurant.toString(),
+      evenCommissionTotal: evenCommissionTotal.toString(),
       type: paymentType,
     });
 
@@ -449,7 +446,7 @@ export default function CardSelectionPage() {
   const handleDeleteCard = async (cardId: string) => {
     if (
       !confirm(
-        "¿Estás seguro de que deseas eliminar este método de pago? Esta acción no se puede deshacer."
+        "¿Estás seguro de que deseas eliminar este método de pago? Esta acción no se puede deshacer.",
       )
     ) {
       return;
@@ -514,7 +511,7 @@ export default function CardSelectionPage() {
           }
           onContinue={() => {
             navigateWithTable(
-              `/payment-success?paymentId=${pendingPaymentData?.paymentId || Date.now()}&amount=${totalAmountCharged}`
+              `/payment-success?paymentId=${pendingPaymentData?.paymentId || Date.now()}&amount=${totalAmountCharged}`,
             );
           }}
           onCancel={() => {
@@ -586,7 +583,7 @@ export default function CardSelectionPage() {
                   {/* Payment Options - Solo mostrar si es tarjeta de crédito */}
                   {(() => {
                     const selectedMethod = allPaymentMethods.find(
-                      (pm) => pm.id === selectedPaymentMethodId
+                      (pm) => pm.id === selectedPaymentMethodId,
                     );
                     return selectedMethod?.cardType === "credit" ? (
                       <div
@@ -760,17 +757,13 @@ export default function CardSelectionPage() {
                       </span>
                     </div>
                   )}
-                  {xquisitoCommissionClient + ivaXquisitoClient > 0 && (
+                  {evenCommissionClient + ivaEvenClient > 0 && (
                     <div className="flex justify-between items-center">
                       <span className="text-black font-medium">
                         + Comisión de servicio
                       </span>
                       <span className="text-black font-medium">
-                        $
-                        {(xquisitoCommissionClient + ivaXquisitoClient).toFixed(
-                          2
-                        )}{" "}
-                        MXN
+                        ${(evenCommissionClient + ivaEvenClient).toFixed(2)} MXN
                       </span>
                     </div>
                   )}
@@ -813,7 +806,7 @@ export default function CardSelectionPage() {
               <div className="px-6 py-4">
                 {(() => {
                   const selectedMethod = allPaymentMethods.find(
-                    (pm) => pm.id === selectedPaymentMethodId
+                    (pm) => pm.id === selectedPaymentMethodId,
                   );
                   const cardBrand = selectedMethod?.cardBrand;
 
@@ -888,7 +881,7 @@ export default function CardSelectionPage() {
                       {/* Opciones MSI */}
                       {(() => {
                         const availableOptions = msiOptions.filter(
-                          (option) => totalAmountCharged >= option.minAmount
+                          (option) => totalAmountCharged >= option.minAmount,
                         );
                         const hasUnavailableOptions =
                           availableOptions.length < msiOptions.length;

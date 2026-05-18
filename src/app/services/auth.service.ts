@@ -162,20 +162,20 @@ class AuthService {
       // Guardar token en localStorage
       if (data.success && data.data?.session?.access_token) {
         localStorage.setItem(
-          "xquisito_access_token",
+          "even_access_token",
           data.data.session.access_token,
         );
         localStorage.setItem(
-          "xquisito_refresh_token",
+          "even_refresh_token",
           data.data.session.refresh_token,
         );
         if (data.data.session.expires_at) {
           localStorage.setItem(
-            "xquisito_expires_at",
+            "even_expires_at",
             data.data.session.expires_at.toString(),
           );
         }
-        localStorage.setItem("xquisito_user", JSON.stringify(data.data.user));
+        localStorage.setItem("even_user", JSON.stringify(data.data.user));
       }
 
       return data;
@@ -348,7 +348,7 @@ class AuthService {
   // Logout
   async logout(): Promise<void> {
     try {
-      const token = localStorage.getItem("xquisito_access_token");
+      const token = localStorage.getItem("even_access_token");
 
       if (token) {
         await fetch(`${API_URL}/auth/logout`, {
@@ -360,15 +360,15 @@ class AuthService {
       }
 
       // Limpiar localStorage
-      localStorage.removeItem("xquisito_access_token");
-      localStorage.removeItem("xquisito_refresh_token");
-      localStorage.removeItem("xquisito_user");
+      localStorage.removeItem("even_access_token");
+      localStorage.removeItem("even_refresh_token");
+      localStorage.removeItem("even_user");
     } catch (error) {
       console.error("Error logging out:", error);
       // Limpiar localStorage de todos modos
-      localStorage.removeItem("xquisito_access_token");
-      localStorage.removeItem("xquisito_refresh_token");
-      localStorage.removeItem("xquisito_user");
+      localStorage.removeItem("even_access_token");
+      localStorage.removeItem("even_refresh_token");
+      localStorage.removeItem("even_user");
     }
   }
 
@@ -429,8 +429,8 @@ class AuthService {
 
   // Obtener usuario actual del localStorage
   getCurrentUser(): any | null {
-    const userStr = localStorage.getItem("xquisito_user");
-    const accessToken = localStorage.getItem("xquisito_access_token");
+    const userStr = localStorage.getItem("even_user");
+    const accessToken = localStorage.getItem("even_access_token");
 
     if (userStr) {
       const user = JSON.parse(userStr);
@@ -446,7 +446,7 @@ class AuthService {
   // Refrescar el access token
   async refreshToken(): Promise<AuthResponse> {
     try {
-      const refreshToken = localStorage.getItem("xquisito_refresh_token");
+      const refreshToken = localStorage.getItem("even_refresh_token");
 
       if (!refreshToken) {
         return {
@@ -467,16 +467,16 @@ class AuthService {
 
       if (data.success && data.data?.session?.access_token) {
         localStorage.setItem(
-          "xquisito_access_token",
+          "even_access_token",
           data.data.session.access_token,
         );
         localStorage.setItem(
-          "xquisito_refresh_token",
+          "even_refresh_token",
           data.data.session.refresh_token,
         );
         if (data.data.session.expires_at) {
           localStorage.setItem(
-            "xquisito_expires_at",
+            "even_expires_at",
             data.data.session.expires_at.toString(),
           );
         }
@@ -498,25 +498,25 @@ class AuthService {
     refresh_token: string;
     expires_at: number;
   }): void {
-    localStorage.setItem("xquisito_access_token", session.access_token);
-    localStorage.setItem("xquisito_refresh_token", session.refresh_token);
-    localStorage.setItem("xquisito_expires_at", session.expires_at.toString());
+    localStorage.setItem("even_access_token", session.access_token);
+    localStorage.setItem("even_refresh_token", session.refresh_token);
+    localStorage.setItem("even_expires_at", session.expires_at.toString());
   }
 
   // Get access token from localStorage
   getAccessToken(): string | null {
-    return localStorage.getItem("xquisito_access_token");
+    return localStorage.getItem("even_access_token");
   }
 
   // Get refresh token from localStorage
   getRefreshToken(): string | null {
-    return localStorage.getItem("xquisito_refresh_token");
+    return localStorage.getItem("even_refresh_token");
   }
 
   // Check if user is authenticated
   isAuthenticated(): boolean {
     const token = this.getAccessToken();
-    const expiresAt = localStorage.getItem("xquisito_expires_at");
+    const expiresAt = localStorage.getItem("even_expires_at");
 
     if (!token || !expiresAt) {
       return false;
@@ -531,19 +531,19 @@ class AuthService {
 
   // Clear session data
   clearSession(): void {
-    localStorage.removeItem("xquisito_access_token");
-    localStorage.removeItem("xquisito_refresh_token");
-    localStorage.removeItem("xquisito_expires_at");
+    localStorage.removeItem("even_access_token");
+    localStorage.removeItem("even_refresh_token");
+    localStorage.removeItem("even_expires_at");
   }
 
   // Set authentication token (used by AuthContext)
   setAuthToken(token: string): void {
-    localStorage.setItem("xquisito_access_token", token);
+    localStorage.setItem("even_access_token", token);
   }
 
   // Clear authentication token
   clearAuthToken(): void {
-    localStorage.removeItem("xquisito_access_token");
+    localStorage.removeItem("even_access_token");
   }
 
   // Clear all session data including room context
@@ -556,9 +556,9 @@ class AuthService {
       sessionStorage.removeItem("authFromMenu");
       sessionStorage.removeItem("pendingRestaurantId");
       // Clear localStorage guest data
-      localStorage.removeItem("xquisito-guest-id");
-      localStorage.removeItem("xquisito-room-number");
-      localStorage.removeItem("xquisito-restaurant-id");
+      localStorage.removeItem("even-guest-id");
+      localStorage.removeItem("even-room-number");
+      localStorage.removeItem("even-restaurant-id");
     }
   }
 }

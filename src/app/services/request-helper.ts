@@ -13,7 +13,7 @@ export interface ApiResponse<T> {
  */
 export async function requestWithAuth<T>(
   endpoint: string,
-  options?: RequestInit
+  options?: RequestInit,
 ): Promise<ApiResponse<T>> {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -82,10 +82,10 @@ export async function requestWithAuth<T>(
 
 function getAuthToken(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("xquisito_access_token");
+  return localStorage.getItem("even_access_token");
 }
 
 function getGuestId(): string {
   if (typeof window === "undefined") return "";
-  return localStorage.getItem("xquisito-guest-id") || "";
+  return localStorage.getItem("even-guest-id") || "";
 }

@@ -52,7 +52,7 @@ export interface PaymentHistory {
 class PaymentService {
   private async request<T>(
     endpoint: string,
-    options?: RequestInit
+    options?: RequestInit,
   ): Promise<ApiResponse<T>> {
     // Usar el helper con refresh automático
     const result = await requestWithAuth<T>(endpoint, options);
@@ -73,7 +73,7 @@ class PaymentService {
 
   // Añadir método de pago
   async addPaymentMethod(
-    paymentData: AddPaymentMethodRequest
+    paymentData: AddPaymentMethodRequest,
   ): Promise<ApiResponse<{ paymentMethod: PaymentMethod }>> {
     // Mapear campos del frontend a los esperados por el backend
     const backendPayload = {
@@ -101,7 +101,7 @@ class PaymentService {
 
   // Eliminar método de pago
   async deletePaymentMethod(
-    paymentMethodId: string
+    paymentMethodId: string,
   ): Promise<ApiResponse<{ message: string }>> {
     return this.request(`/payment-methods/${paymentMethodId}`, {
       method: "DELETE",
@@ -110,7 +110,7 @@ class PaymentService {
 
   // Establecer método de pago como predeterminado
   async setDefaultPaymentMethod(
-    paymentMethodId: string
+    paymentMethodId: string,
   ): Promise<ApiResponse<{ message: string }>> {
     return this.request(`/payment-methods/${paymentMethodId}/default`, {
       method: "PUT",
@@ -119,7 +119,7 @@ class PaymentService {
 
   // Procesar pago
   async processPayment(
-    paymentData: ProcessPaymentRequest
+    paymentData: ProcessPaymentRequest,
   ): Promise<ApiResponse<any>> {
     return this.request("/payments", {
       method: "POST",
@@ -136,7 +136,7 @@ class PaymentService {
 
   // Migrar métodos de pago de guest a usuario autenticado
   async migrateGuestPaymentMethods(
-    guestId: string
+    guestId: string,
   ): Promise<ApiResponse<{ migratedCount: number }>> {
     return this.request("/payment-methods/migrate-from-guest", {
       method: "POST",
@@ -236,14 +236,14 @@ class PaymentService {
     base_amount: number;
     tip_amount: number;
     iva_tip: number;
-    xquisito_commission_total: number;
-    xquisito_commission_client: number;
-    xquisito_commission_restaurant: number;
-    iva_xquisito_client: number;
-    iva_xquisito_restaurant: number;
-    xquisito_client_charge: number;
-    xquisito_restaurant_charge: number;
-    xquisito_rate_applied: number;
+    even_commission_total: number;
+    even_commission_client: number;
+    even_commission_restaurant: number;
+    iva_even_client: number;
+    iva_even_restaurant: number;
+    even_client_charge: number;
+    even_restaurant_charge: number;
+    even_rate_applied: number;
     total_amount_charged: number;
     subtotal_for_commission: number;
     currency: string;

@@ -54,31 +54,36 @@ export default function OrderPage() {
       if (!authLoading && isAuthenticated && user) {
         // Usuario autenticado: verificar si ya está en active_users
         if (state.order?.order_id) {
-          const activeUsersResponse = await orderService.getActiveUsers(state.order.order_id);
+          const activeUsersResponse = await orderService.getActiveUsers(
+            state.order.order_id,
+          );
 
           if (activeUsersResponse.success && activeUsersResponse.data) {
             const existingUser = activeUsersResponse.data.find(
-              (u: any) => u.user_id === user.id
+              (u: any) => u.user_id === user.id,
             );
 
             if (existingUser) {
               // Usuario ya está registrado - ir directo a payment-options
-              console.log("User already in active_users, going to payment-options");
+              console.log(
+                "User already in active_users, going to payment-options",
+              );
               navigateWithTable("/payment-options");
               return;
             }
           }
 
           // Usuario no está en active_users - agregarlo
-          const userName = profile?.firstName && profile?.lastName
-            ? `${profile.firstName} ${profile.lastName}`
-            : profile?.firstName || "Usuario";
+          const userName =
+            profile?.firstName && profile?.lastName
+              ? `${profile.firstName} ${profile.lastName}`
+              : profile?.firstName || "Usuario";
 
           await orderService.addActiveUser(
             state.order.order_id,
             user.id,
             null, // guestId es null para usuarios autenticados
-            userName
+            userName,
           );
 
           // Recargar solo activeUsers (más rápido que loadTableData completo)
@@ -90,21 +95,25 @@ export default function OrderPage() {
         // Obtener guest_id del contexto o de localStorage
         let currentGuestId = guestId;
         if (!currentGuestId) {
-          currentGuestId = localStorage.getItem("xquisito-guest-id");
+          currentGuestId = localStorage.getItem("even-guest-id");
         }
 
         if (state.order?.order_id && currentGuestId) {
           // Verificar si el guest_id ya está en active_users
-          const activeUsersResponse = await orderService.getActiveUsers(state.order.order_id);
+          const activeUsersResponse = await orderService.getActiveUsers(
+            state.order.order_id,
+          );
 
           if (activeUsersResponse.success && activeUsersResponse.data) {
             const existingGuest = activeUsersResponse.data.find(
-              (u: any) => u.guest_id === currentGuestId
+              (u: any) => u.guest_id === currentGuestId,
             );
 
             if (existingGuest) {
               // El invitado ya está registrado - ir directo a payment-options
-              console.log("Guest already in active_users, going to payment-options");
+              console.log(
+                "Guest already in active_users, going to payment-options",
+              );
               navigateWithTable("/payment-options");
               return;
             }
@@ -145,7 +154,7 @@ export default function OrderPage() {
   const paidTotalItems = paidDishes.length;
   const paidTotalPrice = paidDishes.reduce(
     (sum, dish) => sum + (dish.price + dish.extra_price) * dish.quantity,
-    0
+    0,
   );
 
   // Cargar datos cuando se monta el componente
@@ -293,21 +302,21 @@ export default function OrderPage() {
                                               <div key={idx}>
                                                 {field.selectedOptions
                                                   .filter(
-                                                    (opt: any) => opt.price > 0
+                                                    (opt: any) => opt.price > 0,
                                                   )
                                                   .map(
                                                     (
                                                       opt: any,
-                                                      optIdx: number
+                                                      optIdx: number,
                                                     ) => (
                                                       <p key={optIdx}>
                                                         {opt.optionName} $
                                                         {opt.price.toFixed(2)}
                                                       </p>
-                                                    )
+                                                    ),
                                                   )}
                                               </div>
-                                            )
+                                            ),
                                           )}
                                         </div>
                                       )}
@@ -318,7 +327,8 @@ export default function OrderPage() {
                                     {dish.quantity}
                                   </p>
                                   <p className="text-black w-14 md:w-16 lg:w-20 text-base md:text-lg lg:text-xl">
-                                    ${(dish.price + dish.extra_price).toFixed(2)}
+                                    $
+                                    {(dish.price + dish.extra_price).toFixed(2)}
                                   </p>
                                 </div>
                               </div>
@@ -393,21 +403,22 @@ export default function OrderPage() {
                                                 <div key={idx}>
                                                   {field.selectedOptions
                                                     .filter(
-                                                      (opt: any) => opt.price > 0
+                                                      (opt: any) =>
+                                                        opt.price > 0,
                                                     )
                                                     .map(
                                                       (
                                                         opt: any,
-                                                        optIdx: number
+                                                        optIdx: number,
                                                       ) => (
                                                         <p key={optIdx}>
                                                           {opt.optionName} $
                                                           {opt.price.toFixed(2)}
                                                         </p>
-                                                      )
+                                                      ),
                                                     )}
                                                 </div>
-                                              )
+                                              ),
                                             )}
                                           </div>
                                         )}
@@ -423,7 +434,10 @@ export default function OrderPage() {
                                       {dish.quantity}
                                     </p>
                                     <p className="text-black text-base md:text-lg lg:text-xl">
-                                      ${(dish.price + dish.extra_price).toFixed(2)}
+                                      $
+                                      {(dish.price + dish.extra_price).toFixed(
+                                        2,
+                                      )}
                                     </p>
                                   </div>
                                 </div>

@@ -132,15 +132,15 @@ export default function AuthPage() {
       if (!authCompletedRef.current) {
         sessionStorage.removeItem("authFromPaymentFlow");
         sessionStorage.removeItem("authFromMenu");
-        sessionStorage.removeItem("xquisito-post-auth-redirect");
+        sessionStorage.removeItem("even-post-auth-redirect");
         sessionStorage.removeItem("pendingTableRedirect");
         sessionStorage.removeItem("pendingRestaurantId");
       }
     };
 
     // Push a state to intercept back navigation (only if not already added)
-    if (!window.history.state?.xquisitoAuth) {
-      window.history.pushState({ xquisitoAuth: true }, "");
+    if (!window.history.state?.evenAuth) {
+      window.history.pushState({ evenAuth: true }, "");
     }
 
     const handlePopState = () => {
@@ -174,12 +174,10 @@ export default function AuthPage() {
     // Mark auth as completed so cleanup doesn't remove session items
     authCompletedRef.current = true;
 
-    const postAuthRedirect = sessionStorage.getItem(
-      "xquisito-post-auth-redirect",
-    );
+    const postAuthRedirect = sessionStorage.getItem("even-post-auth-redirect");
 
     if (postAuthRedirect) {
-      sessionStorage.removeItem("xquisito-post-auth-redirect");
+      sessionStorage.removeItem("even-post-auth-redirect");
       // Navigate directly to the saved URL
       router.push(postAuthRedirect);
       return;
@@ -193,7 +191,7 @@ export default function AuthPage() {
     sessionStorage.removeItem("pendingRestaurantId");
     sessionStorage.removeItem("authFromPaymentFlow");
     sessionStorage.removeItem("authFromMenu");
-    sessionStorage.removeItem("xquisito-post-auth-redirect");
+    sessionStorage.removeItem("even-post-auth-redirect");
 
     if (authFromMenu && tableNumber) {
       // User signed in from MenuView settings, redirect to dashboard
@@ -349,7 +347,7 @@ export default function AuthPage() {
           } else {
             sessionStorage.removeItem("authFromPaymentFlow");
             sessionStorage.removeItem("authFromMenu");
-            sessionStorage.removeItem("xquisito-post-auth-redirect");
+            sessionStorage.removeItem("even-post-auth-redirect");
             sessionStorage.removeItem("pendingTableRedirect");
             sessionStorage.removeItem("pendingRestaurantId");
             router.back();
@@ -370,7 +368,7 @@ export default function AuthPage() {
         <div className="mb-8 text-center">
           <img
             src="/logos/logo-short-green.webp"
-            alt="Xquisito Logo"
+            alt="Even Logo"
             className="size-18 mx-auto mb-4"
           />
           <h1 className="text-2xl font-medium text-white">

@@ -46,12 +46,12 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
 
       // NO eliminar guest_id aquí - CartContext lo necesita para migrar el carrito
       // El CartContext se encargará de limpiarlo después de la migración exitosa
-      const guestIdBefore = localStorage.getItem("xquisito-guest-id");
+      const guestIdBefore = localStorage.getItem("even-guest-id");
       if (guestIdBefore) {
         // Solo limpiar room/restaurant/name, NO el guest_id
-        localStorage.removeItem("xquisito-room-number");
-        localStorage.removeItem("xquisito-restaurant-id");
-        localStorage.removeItem("xquisito-guest-name");
+        localStorage.removeItem("even-room-number");
+        localStorage.removeItem("even-restaurant-id");
+        localStorage.removeItem("even-guest-name");
       }
 
       setIsLoading(true);
@@ -78,7 +78,7 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
           console.log(
             "💳 Loaded payment methods for registered user:",
             methods.length,
-            methods
+            methods,
           );
         } else {
           setPaymentMethods([]);
@@ -87,7 +87,7 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
       } catch (error) {
         console.error(
           "❌ Error fetching payment methods for registered user:",
-          error
+          error,
         );
         setPaymentMethods([]);
       } finally {
@@ -120,7 +120,7 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
           console.log(
             "💳 Loaded payment methods for guest:",
             methods.length,
-            methods
+            methods,
           );
         } else {
           setPaymentMethods([]);
@@ -165,11 +165,11 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
           prev.map((pm) => ({
             ...pm,
             isDefault: pm.id === paymentMethodId,
-          }))
+          })),
         );
       } else {
         throw new Error(
-          response.error?.message || "Failed to set default payment method"
+          response.error?.message || "Failed to set default payment method",
         );
       }
     } catch (error) {
@@ -195,7 +195,7 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
       } else {
         console.error("❌ Delete payment method failed:", response.error);
         throw new Error(
-          response.error?.message || "No se pudo eliminar la tarjeta"
+          response.error?.message || "No se pudo eliminar la tarjeta",
         );
       }
     } catch (error) {
@@ -206,7 +206,7 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
 
   const migrateGuestPaymentMethods = async () => {
     // Get guest ID from localStorage
-    const guestIdToMigrate = localStorage.getItem("xquisito-guest-id");
+    const guestIdToMigrate = localStorage.getItem("even-guest-id");
 
     if (!guestIdToMigrate) {
       return;
@@ -220,7 +220,7 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
       "🔄 Migrating payment methods from guest:",
       guestIdToMigrate,
       "to user:",
-      user.id
+      user.id,
     );
 
     try {
@@ -231,7 +231,7 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
         console.log(
           "✅ Payment methods migrated successfully:",
           response.data?.migratedCount || 0,
-          "methods"
+          "methods",
         );
 
         // Refresh payment methods to show the migrated ones
@@ -240,14 +240,14 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
         // IMPORTANTE: Solo eliminar el guest-id después de que TODAS las migraciones se completen
         // Esto incluye: cart migration (ejecutada en CartContext) + payment methods migration
         console.log(
-          "🗑️ All migrations completed - removing guest ID from localStorage"
+          "🗑️ All migrations completed - removing guest ID from localStorage",
         );
-        localStorage.removeItem("xquisito-guest-id");
+        localStorage.removeItem("even-guest-id");
         console.log("✅ Guest ID successfully removed");
       } else {
         console.error(
           "❌ Failed to migrate payment methods:",
-          response.error?.message
+          response.error?.message,
         );
       }
     } catch (error) {
@@ -279,11 +279,11 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
       // Solo ejecutar cuando:
       // 1. El usuario está autenticado
       // 2. Hay un guest-id en localStorage
-      const guestIdInStorage = localStorage.getItem("xquisito-guest-id");
+      const guestIdInStorage = localStorage.getItem("even-guest-id");
 
       if (user && guestIdInStorage) {
         console.log(
-          "🔄 Auto-triggering payment methods migration after authentication"
+          "🔄 Auto-triggering payment methods migration after authentication",
         );
 
         // Esperar un poco para asegurarse de que el CartContext termine su migración primero

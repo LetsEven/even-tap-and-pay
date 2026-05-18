@@ -58,7 +58,7 @@ export default function PaymentSuccessPage() {
   const handleSignUp = () => {
     // Save the current URL to redirect back after registration
     const currentUrl = window.location.pathname + window.location.search;
-    sessionStorage.setItem("xquisito-post-auth-redirect", currentUrl);
+    sessionStorage.setItem("even-post-auth-redirect", currentUrl);
 
     // Navigate to auth page
     navigateWithTable("/auth");
@@ -91,9 +91,7 @@ export default function PaymentSuccessPage() {
       let fromSession = true;
 
       // First, try to find the current payment key reference
-      const currentKeyRef = sessionStorage.getItem(
-        "xquisito-current-payment-key",
-      );
+      const currentKeyRef = sessionStorage.getItem("even-current-payment-key");
       if (currentKeyRef) {
         storedPayment = sessionStorage.getItem(currentKeyRef);
         storageKey = currentKeyRef;
@@ -104,7 +102,7 @@ export default function PaymentSuccessPage() {
       if (!storedPayment) {
         for (let i = 0; i < sessionStorage.length; i++) {
           const key = sessionStorage.key(i);
-          if (key && key.startsWith("xquisito-payment-success-")) {
+          if (key && key.startsWith("even-payment-success-")) {
             storedPayment = sessionStorage.getItem(key);
             storageKey = key;
             console.log("📦 Found payment via sessionStorage search:", key);
@@ -118,19 +116,19 @@ export default function PaymentSuccessPage() {
         fromSession = false;
 
         // Check for completed payment first (most recent flow)
-        storedPayment = localStorage.getItem("xquisito-completed-payment");
-        storageKey = "xquisito-completed-payment";
+        storedPayment = localStorage.getItem("even-completed-payment");
+        storageKey = "even-completed-payment";
 
         // Check for pending payment (EcartPay redirect flow)
         if (!storedPayment) {
-          storedPayment = localStorage.getItem("xquisito-pending-payment");
-          storageKey = "xquisito-pending-payment";
+          storedPayment = localStorage.getItem("even-pending-payment");
+          storageKey = "even-pending-payment";
         }
 
         // Check for payment intent (SDK flow)
         if (!storedPayment) {
-          storedPayment = localStorage.getItem("xquisito-payment-intent");
-          storageKey = "xquisito-payment-intent";
+          storedPayment = localStorage.getItem("even-payment-intent");
+          storageKey = "even-payment-intent";
         }
       }
 
@@ -151,17 +149,17 @@ export default function PaymentSuccessPage() {
               parsed.transactionId ||
               urlPaymentId ||
               Date.now().toString();
-            const uniqueKey = `xquisito-payment-success-${paymentIdentifier}`;
+            const uniqueKey = `even-payment-success-${paymentIdentifier}`;
 
             sessionStorage.setItem(uniqueKey, storedPayment);
 
             // Also save the current payment key reference
-            sessionStorage.setItem("xquisito-current-payment-key", uniqueKey);
+            sessionStorage.setItem("even-current-payment-key", uniqueKey);
 
             // Clean up localStorage
-            localStorage.removeItem("xquisito-pending-payment");
-            localStorage.removeItem("xquisito-payment-intent");
-            localStorage.removeItem("xquisito-completed-payment");
+            localStorage.removeItem("even-pending-payment");
+            localStorage.removeItem("even-payment-intent");
+            localStorage.removeItem("even-completed-payment");
           }
         } catch (e) {
           console.error("Failed to parse stored payment details:", e);
@@ -202,13 +200,13 @@ export default function PaymentSuccessPage() {
 
   const handleBackToMenu = () => {
     // Clear payment success data from sessionStorage
-    const currentKey = sessionStorage.getItem("xquisito-current-payment-key");
+    const currentKey = sessionStorage.getItem("even-current-payment-key");
     if (currentKey) {
       sessionStorage.removeItem(currentKey);
-      sessionStorage.removeItem("xquisito-current-payment-key");
+      sessionStorage.removeItem("even-current-payment-key");
     }
     // Fallback: also remove generic key
-    sessionStorage.removeItem("xquisito-payment-success");
+    sessionStorage.removeItem("even-payment-success");
 
     // Since session is cleared, redirect to home page to select table again
     router.push("/");
@@ -216,13 +214,13 @@ export default function PaymentSuccessPage() {
 
   const handleGoHome = () => {
     // Clear payment success data from sessionStorage
-    const currentKey = sessionStorage.getItem("xquisito-current-payment-key");
+    const currentKey = sessionStorage.getItem("even-current-payment-key");
     if (currentKey) {
       sessionStorage.removeItem(currentKey);
-      sessionStorage.removeItem("xquisito-current-payment-key");
+      sessionStorage.removeItem("even-current-payment-key");
     }
     // Fallback: also remove generic key
-    sessionStorage.removeItem("xquisito-payment-success");
+    sessionStorage.removeItem("even-payment-success");
 
     // Complete exit - go back to order page
     navigateWithTable("/order");
@@ -287,7 +285,7 @@ export default function PaymentSuccessPage() {
       <div className="flex-1 flex justify-center items-center">
         <img
           src="/logos/logo-short-green.webp"
-          alt="Xquisito Logo"
+          alt="Even Logo"
           className="size-20 md:size-28 lg:size-32 animate-logo-fade-in"
         />
       </div>
@@ -668,8 +666,8 @@ export default function PaymentSuccessPage() {
                   </div>
                 )}
 
-                {(paymentDetails?.xquisitoCommissionClient || 0) +
-                  (paymentDetails?.ivaXquisitoClient || 0) >
+                {(paymentDetails?.evenCommissionClient || 0) +
+                  (paymentDetails?.ivaEvenClient || 0) >
                   0 && (
                   <div className="flex justify-between items-center">
                     <span className="text-black font-medium text-base md:text-lg lg:text-xl">
@@ -678,8 +676,8 @@ export default function PaymentSuccessPage() {
                     <span className="text-black font-medium text-base md:text-lg lg:text-xl">
                       $
                       {(
-                        (paymentDetails?.xquisitoCommissionClient || 0) +
-                        (paymentDetails?.ivaXquisitoClient || 0)
+                        (paymentDetails?.evenCommissionClient || 0) +
+                        (paymentDetails?.ivaEvenClient || 0)
                       ).toFixed(2)}{" "}
                       MXN
                     </span>
@@ -715,7 +713,7 @@ export default function PaymentSuccessPage() {
             <div className="px-6 md:px-8 lg:px-10 flex items-center justify-center mb-6 md:mb-8 lg:mb-10">
               <img
                 src="/logos/logo-short-white.webp"
-                alt="Xquisito Logo"
+                alt="Even Logo"
                 className="size-20 md:size-24 lg:size-28"
               />
             </div>

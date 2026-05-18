@@ -40,26 +40,26 @@ interface TableContextType {
     amount?: number,
     tipAmount?: number,
     paymentMethodId?: string,
-    selectedItems?: string[]
+    selectedItems?: string[],
   ) => Promise<void>;
   payDishOrder: (
     dishId: string,
-    paymentMethodId?: string | null
+    paymentMethodId?: string | null,
   ) => Promise<void>;
   payTableAmount: (
     amount: number,
     userId?: string,
-    guestName?: string
+    guestName?: string,
   ) => Promise<void>;
   initializeSplitBill: (
     numberOfPeople: number,
     userIds?: string[],
-    guestNames?: string[]
+    guestNames?: string[],
   ) => Promise<void>;
   paySplitAmount: (userId?: string, guestName?: string) => Promise<void>;
   updateDishStatus: (
     dishId: string,
-    status: DishOrder["status"]
+    status: DishOrder["status"],
   ) => Promise<void>;
 }
 
@@ -104,11 +104,11 @@ export function TableProvider({ children }: { children: ReactNode }) {
       setState((prev) => ({
         ...prev,
         dishOrders: prev.dishOrders.map((dish) =>
-          dish.id === dishId ? { ...dish, status } : dish
+          dish.id === dishId ? { ...dish, status } : dish,
         ),
       }));
     },
-    []
+    [],
   );
 
   const handleOrderStatusChanged = useCallback(
@@ -119,7 +119,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
         order: prev.order ? { ...prev.order, status } : null,
       }));
     },
-    []
+    [],
   );
 
   const handleOrderCompleted = useCallback((order: TapPayOrder) => {
@@ -168,7 +168,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
       const response = await orderService.getActiveOrderByTable(
         params.restaurantId,
         params.branchNumber,
-        state.tableNumber
+        state.tableNumber,
       );
 
       if (response.success) {
@@ -217,7 +217,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
       const orderResponse = await orderService.getActiveOrderByTable(
         params.restaurantId,
         params.branchNumber,
-        state.tableNumber
+        state.tableNumber,
       );
 
       console.log("📥 Order response:", orderResponse);
@@ -332,7 +332,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
 
     try {
       const response = await orderService.getSplitPaymentStatus(
-        state.order.order_id
+        state.order.order_id,
       );
 
       if (response.success && response.data) {
@@ -358,7 +358,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
       amount?: number,
       tipAmount: number = 0,
       paymentMethodId?: string,
-      selectedItems?: string[]
+      selectedItems?: string[],
     ) => {
       if (!state.order?.order_id) {
         throw new Error("No hay orden activa");
@@ -376,7 +376,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
           selectedItems,
           userId: user?.id,
           guestName: !user
-            ? localStorage.getItem("xquisito-guest-name") || undefined
+            ? localStorage.getItem("even-guest-name") || undefined
             : undefined,
         });
 
@@ -397,7 +397,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
         throw error;
       }
     },
-    [state.order?.order_id, user, refreshAll]
+    [state.order?.order_id, user, refreshAll],
   );
 
   // Pagar un platillo
@@ -408,7 +408,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
       try {
         const response = await orderService.payDishOrder(
           dishId,
-          paymentMethodId || null
+          paymentMethodId || null,
         );
 
         if (response.success) {
@@ -428,7 +428,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
         throw error;
       }
     },
-    [refreshAll]
+    [refreshAll],
   );
 
   // Pagar un monto específico
@@ -446,7 +446,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
           amount,
           null,
           userId || user?.id,
-          guestName
+          guestName,
         );
 
         if (response.success) {
@@ -464,7 +464,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
         throw error;
       }
     },
-    [state.order?.order_id, user, refreshAll]
+    [state.order?.order_id, user, refreshAll],
   );
 
   // Inicializar split bill
@@ -472,7 +472,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
     async (
       numberOfPeople: number,
       userIds?: string[],
-      guestNames?: string[]
+      guestNames?: string[],
     ) => {
       if (!state.order?.order_id) {
         throw new Error("No hay orden activa");
@@ -485,14 +485,14 @@ export function TableProvider({ children }: { children: ReactNode }) {
           state.order.order_id,
           numberOfPeople,
           userIds,
-          guestNames
+          guestNames,
         );
 
         if (response.success) {
           await refreshAll();
         } else {
           throw new Error(
-            response.error || "Error al inicializar división de cuenta"
+            response.error || "Error al inicializar división de cuenta",
           );
         }
       } catch (error) {
@@ -507,7 +507,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
         throw error;
       }
     },
-    [state.order?.order_id, refreshAll]
+    [state.order?.order_id, refreshAll],
   );
 
   // Pagar parte del split
@@ -524,7 +524,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
           state.order.order_id,
           null,
           userId || user?.id,
-          guestName
+          guestName,
         );
 
         if (response.success) {
@@ -544,7 +544,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
         throw error;
       }
     },
-    [state.order?.order_id, user, refreshAll]
+    [state.order?.order_id, user, refreshAll],
   );
 
   // Actualizar estado de platillo
@@ -557,7 +557,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
           await loadDishOrders();
         } else {
           throw new Error(
-            response.error || "Error al actualizar estado del platillo"
+            response.error || "Error al actualizar estado del platillo",
           );
         }
       } catch (error) {
@@ -565,7 +565,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
         throw error;
       }
     },
-    [loadDishOrders]
+    [loadDishOrders],
   );
 
   return (

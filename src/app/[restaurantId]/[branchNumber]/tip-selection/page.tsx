@@ -35,7 +35,7 @@ export default function TipSelectionPage() {
 
     try {
       const response = await orderService.getSplitPaymentStatus(
-        state.order.order_id
+        state.order.order_id,
       );
       if (response.success && response.data) {
         setSplitStatus(response.data);
@@ -115,7 +115,7 @@ export default function TipSelectionPage() {
   const dishes = state.order?.items || [];
 
   const unpaidDishes = dishes.filter(
-    (dish) => dish.payment_status === "not_paid" || !dish.payment_status
+    (dish) => dish.payment_status === "not_paid" || !dish.payment_status,
   );
   const paidDishes = dishes.filter((dish) => dish.payment_status === "paid");
 
@@ -124,7 +124,7 @@ export default function TipSelectionPage() {
     state.order?.total_amount ||
     dishes.reduce(
       (sum, dish) => sum + (dish.price + dish.extra_price) * dish.quantity,
-      0
+      0,
     );
 
   // paid_amount de la orden incluye pagos por todos los métodos
@@ -176,12 +176,12 @@ export default function TipSelectionPage() {
 
   const {
     ivaTip,
-    xquisitoCommissionTotal,
-    xquisitoCommissionClient,
-    xquisitoCommissionRestaurant,
-    ivaXquisitoClient,
-    xquisitoClientCharge,
-    xquisitoRestaurantCharge,
+    evenCommissionTotal,
+    evenCommissionClient,
+    evenCommissionRestaurant,
+    ivaEvenClient,
+    evenClientCharge,
+    evenRestaurantCharge,
     totalAmountCharged: paymentAmount,
   } = commissions;
 
@@ -202,7 +202,7 @@ export default function TipSelectionPage() {
     setSelectedItems((prev) =>
       prev.includes(itemId)
         ? prev.filter((id) => id !== itemId)
-        : [...prev, itemId]
+        : [...prev, itemId],
     );
   };
 
@@ -213,11 +213,11 @@ export default function TipSelectionPage() {
       baseAmount: baseAmount.toString(),
       tipAmount: tipAmount.toString(),
       ivaTip: ivaTip.toString(),
-      xquisitoCommissionClient: xquisitoCommissionClient.toString(),
-      ivaXquisitoClient: ivaXquisitoClient.toString(),
-      xquisitoCommissionRestaurant: xquisitoCommissionRestaurant.toString(),
-      xquisitoRestaurantCharge: xquisitoRestaurantCharge.toString(),
-      xquisitoCommissionTotal: xquisitoCommissionTotal.toString(),
+      evenCommissionClient: evenCommissionClient.toString(),
+      ivaEvenClient: ivaEvenClient.toString(),
+      evenCommissionRestaurant: evenCommissionRestaurant.toString(),
+      evenRestaurantCharge: evenRestaurantCharge.toString(),
+      evenCommissionTotal: evenCommissionTotal.toString(),
       ...(paymentType === "select-items" && {
         selectedItems: selectedItems.join(","),
       }),
@@ -466,7 +466,7 @@ export default function TipSelectionPage() {
                                   src={
                                     dish.images[0] || "/logo-short-green.webp"
                                   }
-                                  alt="Logo Xquisito"
+                                  alt="Logo Even"
                                   className="w-full h-full object-cover rounded-sm"
                                 />
                               </div>
@@ -915,7 +915,7 @@ export default function TipSelectionPage() {
                     + Comisión de servicio
                   </span>
                   <span className="text-black font-medium text-base md:text-lg lg:text-xl">
-                    ${xquisitoClientCharge.toFixed(2)} MXN
+                    ${evenClientCharge.toFixed(2)} MXN
                   </span>
                 </div>
               </div>

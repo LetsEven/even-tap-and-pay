@@ -78,12 +78,12 @@ export default function Home() {
             <div className="flex items-center justify-center gap-4 md:gap-6 lg:gap-8 mb-4 md:mb-5 lg:mb-6">
               <img
                 src="/logos/logo-short-green.webp"
-                alt="Xquisito Logo"
+                alt="Even Logo"
                 className="size-16 md:size-20 lg:size-24"
               />
             </div>
             <h1 className="text-white text-xl md:text-2xl lg:text-3xl font-medium mb-2 md:mb-3 lg:mb-4">
-              Bienvenido a Xquisito
+              Bienvenido a Even
             </h1>
             <p className="text-white/80 text-sm md:text-base lg:text-lg">
               Por favor tapee la tarjeta o escanee el código QR de su mesa para

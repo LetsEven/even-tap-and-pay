@@ -62,7 +62,7 @@ export default function UserPage() {
 
         // Si no hay guestId del contexto, obtenerlo desde localStorage
         if (!currentGuestId) {
-          currentGuestId = localStorage.getItem("xquisito-guest-id");
+          currentGuestId = localStorage.getItem("even-guest-id");
         }
 
         // Guardar el nombre del invitado en el contexto

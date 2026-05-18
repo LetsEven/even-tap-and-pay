@@ -76,7 +76,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           authPayload.guestName = guestName || "Invitado";
         } else if (user) {
           // Usuario autenticado - obtener token de localStorage
-          const token = localStorage.getItem("xquisito-auth-token");
+          const token = localStorage.getItem("even-auth-token");
           if (token) {
             authPayload.token = token;
           } else {
@@ -94,7 +94,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
             clientType: authPayload.clientType,
             hasGuestId: !!authPayload.guestId,
             hasToken: !!authPayload.token,
-          }
+          },
         );
 
         const newSocket = io(SOCKET_URL, {
@@ -174,7 +174,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         });
       }
     },
-    [isConnected, params?.restaurantId, params?.branchNumber]
+    [isConnected, params?.restaurantId, params?.branchNumber],
   );
 
   const leaveTapPay = useCallback(
@@ -189,7 +189,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         currentTapPayRoom.current = null;
       }
     },
-    [isConnected, params?.restaurantId, params?.branchNumber]
+    [isConnected, params?.restaurantId, params?.branchNumber],
   );
 
   return (

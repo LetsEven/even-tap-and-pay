@@ -32,14 +32,14 @@ export default function MenuHeader({
   const pathname = usePathname();
   const [isParticipantsModalOpen, setIsParticipantsModalOpen] = useState(false);
   const [usersImages, setUsersImages] = useState<Record<string, UserImageData>>(
-    {}
+    {},
   );
   const { user, profile, isLoading } = useAuth();
   const [participantsKey, setParticipantsKey] = useState(0);
 
   // Forzar actualización cuando cambian los activeUsers
   useEffect(() => {
-    setParticipantsKey(prev => prev + 1);
+    setParticipantsKey((prev) => prev + 1);
   }, [state.activeUsers, state.activeUsers?.length]);
 
   const handleBack = () => {
@@ -158,9 +158,9 @@ export default function MenuHeader({
           )}
         </div>
 
-        {/* Xquisito Logo */}
+        {/* Even Logo */}
         <div className="absolute left-1/2 transform -translate-x-1/2 size-10 md:size-12 lg:size-14">
-          <img src="/logos/logo-short-green.webp" alt="Xquisito Logo" />
+          <img src="/logos/logo-short-green.webp" alt="Even Logo" />
         </div>
 
         {/* Participantes */}
@@ -287,7 +287,7 @@ export default function MenuHeader({
                                 (u) =>
                                   (participant.user_id &&
                                     u.user_id === participant.user_id) ||
-                                  u.guest_name === participant.guest_name
+                                  u.guest_name === participant.guest_name,
                               )
                             : null;
 
