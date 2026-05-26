@@ -363,6 +363,30 @@ body {
   animation: pulse-button 1.5s ease-out infinite;
 }
 
+/* Apple Pay button border radius and height */
+#apple-pay-container apple-pay-button {
+  --apple-pay-button-border-radius: 9999px;
+  height: 48px;
+}
+
+#apple-pay-container > * {
+  border-radius: 9999px !important;
+  height: 48px !important;
+}
+
+/* Google Pay button — same shape and height as Apple Pay */
+#google-pay-container {
+  border-radius: 9999px !important;
+  overflow: hidden !important;
+  height: 48px !important;
+}
+
+#google-pay-container > *,
+#google-pay-container iframe {
+  width: 100% !important;
+  height: 48px !important;
+}
+
 /* Fix para inputs en Safari/iOS - evita deformación y zoom */
 input,
 select,

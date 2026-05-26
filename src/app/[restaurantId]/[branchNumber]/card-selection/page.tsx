@@ -5,7 +5,7 @@ import { useTable } from "@/app/context/TableContext";
 import { useTableNavigation } from "@/app/hooks/useTableNavigation";
 import { useRestaurant } from "@/app/context/RestaurantContext";
 import { usePayment } from "@/app/context/PaymentContext";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useGuest } from "@/app/context/GuestContext";
 import MenuHeader from "@/app/components/headers/MenuHeader";
@@ -13,6 +13,7 @@ import OrderAnimation from "@/app/components/UI/OrderAnimation";
 import { paymentService } from "@/app/services/payment.service";
 import { Plus, Trash2, Loader2, CircleAlert, X } from "lucide-react";
 import { getCardTypeIcon } from "@/app/utils/cardIcons";
+import { useMsiConfig } from "@/app/hooks/useMsiConfig";
 
 export default function CardSelectionPage() {
   const { state, setTableNumber, loadTableData } = useTable();
@@ -24,6 +25,7 @@ export default function CardSelectionPage() {
     usePayment();
   const { user, profile, isLoading: authLoading } = useAuth();
   const { guestId } = useGuest();
+  const { msiConfig } = useMsiConfig();
 
   // Tarjeta por defecto del sistema
   const defaultSystemCard = {
@@ -90,6 +92,35 @@ export default function CardSelectionPage() {
     amount: number;
     paymentType: string;
   } | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Apple Pay
+  const [applePayReady, setApplePayReady] = useState(false);
+  const [applePayUnavailable, setApplePayUnavailable] = useState(false);
+  const [isApplePayProcessing, setIsApplePayProcessing] = useState(false);
+  const [applePayPaymentId, setApplePayPaymentId] = useState<string | null>(
+    null,
+  );
+  const applePayListenersRef = useRef(false);
+
+  // Google Pay
+  const [googlePayReady, setGooglePayReady] = useState(false);
+  const [googlePayUnavailable, setGooglePayUnavailable] = useState<boolean>(
+    () => {
+      if (typeof window === "undefined") return false;
+      const ua = navigator.userAgent;
+      return (
+        /iPhone|iPad|iPod/.test(ua) ||
+        (ua.includes("Macintosh") &&
+          navigator.vendor === "Apple Computer, Inc.")
+      );
+    },
+  );
+  const [isGooglePayProcessing, setIsGooglePayProcessing] = useState(false);
+  const [googlePayPaymentId, setGooglePayPaymentId] = useState<string | null>(
+    null,
+  );
+  const googlePayListenersRef = useRef(false);
 
   // Establecer restaurantId y branchNumber desde los path params
   useEffect(() => {
@@ -132,24 +163,18 @@ export default function CardSelectionPage() {
   useEffect(() => {
     const loadData = async () => {
       if (!tableNumber) {
-        console.log("⚠️ Card selection: Waiting for tableNumber...");
         return;
       }
 
       if (!restaurantParams?.restaurantId || !restaurantParams?.branchNumber) {
-        console.log("⚠️ Card selection: Waiting for restaurant params...");
         return;
       }
 
       if (!state.order) {
-        console.log("🔄 Card selection: Loading table data (no order)");
         await loadTableData();
       } else if (state.order?.order_id) {
         if (!state.order.items || state.order.items.length === 0) {
-          console.log("🔄 Card selection: Loading table data (missing data)");
           await loadTableData();
-        } else {
-          console.log("✅ Card selection: Data already loaded");
         }
       }
     };
@@ -166,10 +191,213 @@ export default function CardSelectionPage() {
       const defaultMethod =
         allPaymentMethods.find((pm) => pm.isDefault) || allPaymentMethods[0];
       setSelectedPaymentMethodId(defaultMethod.id);
-      console.log("💳 Auto-seleccionando tarjeta:", defaultMethod.id);
     }
     setIsLoadingInitial(false);
   }, [allPaymentMethods.length]);
+
+  // Cargar SDK de Apple Pay
+  useEffect(() => {
+    const ApplePaySession = (window as any).ApplePaySession;
+    if (!ApplePaySession || !ApplePaySession.canMakePayments?.()) {
+      setApplePayUnavailable(true);
+      return;
+    }
+    const src = "https://ecartpay.com/sdk/pay.js?v=2";
+    if (!document.querySelector(`script[src="${src}"]`)) {
+      const script = document.createElement("script");
+      script.src = src;
+      script.async = true;
+      document.head.appendChild(script);
+    }
+  }, []);
+
+  // Cargar SDK de Google Pay
+  useEffect(() => {
+    if (googlePayUnavailable) return;
+    const src = "https://ecartpay.com/sdk/pay.js?v=2";
+    if (!document.querySelector(`script[src="${src}"]`)) {
+      const script = document.createElement("script");
+      script.src = src;
+      script.async = true;
+      document.head.appendChild(script);
+    }
+  }, [googlePayUnavailable]);
+
+  const getApplePaySDK = () =>
+    new Promise<any>((resolve) => {
+      if ((window as any).Pay?.ApplePay)
+        return resolve((window as any).Pay.ApplePay);
+      const interval = setInterval(() => {
+        if ((window as any).Pay?.ApplePay) {
+          clearInterval(interval);
+          resolve((window as any).Pay.ApplePay);
+        }
+      }, 100);
+    });
+
+  const getGooglePaySDK = () =>
+    new Promise<any>((resolve) => {
+      if ((window as any).Pay?.GooglePay)
+        return resolve((window as any).Pay.GooglePay);
+      const interval = setInterval(() => {
+        if ((window as any).Pay?.GooglePay) {
+          clearInterval(interval);
+          resolve((window as any).Pay.GooglePay);
+        }
+      }, 100);
+    });
+
+  // Inicializar Apple Pay SDK
+  useEffect(() => {
+    if (
+      isLoadingInitial ||
+      totalAmountCharged <= 0 ||
+      typeof window === "undefined"
+    )
+      return;
+    if (applePayListenersRef.current) return;
+    applePayListenersRef.current = true;
+
+    (async () => {
+      try {
+        const orderResult = await paymentService.createApplePayOrder({
+          amount: totalAmountCharged,
+          currency: "MXN",
+          restaurantId: restaurantParams?.restaurantId as string,
+          baseAmount,
+          tipAmount,
+        });
+
+        const appleOrderId =
+          (orderResult as any).orderId ?? orderResult.data?.orderId;
+        if (!orderResult.success || !appleOrderId) {
+          applePayListenersRef.current = false;
+          return;
+        }
+
+        const sdkAlreadyLoaded = !!(window as any).Pay?.ApplePay;
+        const applePaySDK = await getApplePaySDK();
+        if (!applePaySDK) {
+          applePayListenersRef.current = false;
+          return;
+        }
+
+        applePaySDK.on("ready", () =>
+          setTimeout(() => setApplePayReady(true), 2800),
+        );
+        applePaySDK.on("unavailable", () => setApplePayUnavailable(true));
+        applePaySDK.on("cancel", () => setIsApplePayProcessing(false));
+        applePaySDK.on("error", () => {
+          setIsApplePayProcessing(false);
+          setApplePayUnavailable(true);
+        });
+        applePaySDK.on("success", (event: any) => {
+          const walletPaymentId = event?.detail?.id || appleOrderId;
+          setApplePayPaymentId(walletPaymentId);
+          setIsApplePayProcessing(true);
+          setPendingPaymentData({
+            paymentId: walletPaymentId,
+            amount: totalAmountCharged,
+            paymentType,
+          });
+          setShowPaymentAnimation(true);
+        });
+
+        applePaySDK.render({
+          container: "#apple-pay-container",
+          orderId: appleOrderId,
+          amount: totalAmountCharged,
+          currency: "MXN",
+          countryCode: "MX",
+          label: "Even",
+          buttonStyle: "black",
+          buttonType: "pay",
+          borderRadius: "8px",
+          supportedNetworks: ["visa", "masterCard", "amex"],
+        });
+
+        if (sdkAlreadyLoaded) setTimeout(() => setApplePayReady(true), 2800);
+      } catch {
+        applePayListenersRef.current = false;
+      }
+    })();
+  }, [isLoadingInitial, totalAmountCharged]);
+
+  // Inicializar Google Pay SDK
+  useEffect(() => {
+    if (
+      isLoadingInitial ||
+      totalAmountCharged <= 0 ||
+      typeof window === "undefined"
+    )
+      return;
+    if (googlePayUnavailable) return;
+    if (googlePayListenersRef.current) return;
+    googlePayListenersRef.current = true;
+
+    (async () => {
+      try {
+        const orderResult = await paymentService.createGooglePayOrder({
+          amount: totalAmountCharged,
+          currency: "MXN",
+          restaurantId: restaurantParams?.restaurantId as string,
+          baseAmount,
+          tipAmount,
+        });
+
+        const googleOrderId =
+          (orderResult as any).orderId ?? orderResult.data?.orderId;
+        if (!orderResult.success || !googleOrderId) {
+          googlePayListenersRef.current = false;
+          return;
+        }
+
+        const sdkAlreadyLoaded = !!(window as any).Pay?.GooglePay;
+        const googlePaySDK = await getGooglePaySDK();
+        if (!googlePaySDK) {
+          googlePayListenersRef.current = false;
+          return;
+        }
+
+        googlePaySDK.on("ready", () =>
+          setTimeout(() => setGooglePayReady(true), 2800),
+        );
+        googlePaySDK.on("unavailable", () => setGooglePayUnavailable(true));
+        googlePaySDK.on("cancel", () => setIsGooglePayProcessing(false));
+        googlePaySDK.on("error", () => {
+          setIsGooglePayProcessing(false);
+          setGooglePayUnavailable(true);
+        });
+        googlePaySDK.on("success", (event: any) => {
+          const walletPaymentId = event?.detail?.activity_id || googleOrderId;
+          setGooglePayPaymentId(walletPaymentId);
+          setIsGooglePayProcessing(true);
+          setPendingPaymentData({
+            paymentId: walletPaymentId,
+            amount: totalAmountCharged,
+            paymentType,
+          });
+          setShowPaymentAnimation(true);
+        });
+
+        googlePaySDK.render({
+          container: "#google-pay-container",
+          orderId: googleOrderId,
+          amount: totalAmountCharged,
+          currency: "MXN",
+          countryCode: "MX",
+          allowedCardNetworks: ["VISA", "MASTERCARD", "AMEX"],
+          allowedAuthMethods: ["PAN_ONLY", "CRYPTOGRAM_3DS"],
+          buttonColor: "black",
+          buttonType: "pay",
+        });
+
+        if (sdkAlreadyLoaded) setTimeout(() => setGooglePayReady(true), 2800);
+      } catch {
+        googlePayListenersRef.current = false;
+      }
+    })();
+  }, [isLoadingInitial, totalAmountCharged, googlePayUnavailable]);
 
   // Calcular el total a mostrar según la opción MSI seleccionada
   const getDisplayTotal = () => {
@@ -183,35 +411,13 @@ export default function CardSelectionPage() {
     );
     const cardBrand = selectedMethod?.cardBrand;
 
-    // Configuración de MSI según el tipo de tarjeta
-    const msiOptions =
-      cardBrand === "amex"
-        ? [
-            { months: 3, rate: 3.25 },
-            { months: 6, rate: 6.25 },
-            { months: 9, rate: 8.25 },
-            { months: 12, rate: 10.25 },
-            { months: 15, rate: 13.25 },
-            { months: 18, rate: 15.25 },
-            { months: 21, rate: 17.25 },
-            { months: 24, rate: 19.25 },
-          ]
-        : [
-            { months: 3, rate: 3.5 },
-            { months: 6, rate: 5.5 },
-            { months: 9, rate: 8.5 },
-            { months: 12, rate: 11.5 },
-            { months: 18, rate: 15.0 },
-          ];
+    const msiOptions = cardBrand === "amex" ? msiConfig.amex : msiConfig.visaMc;
 
     // Encontrar la opción seleccionada
     const selectedOption = msiOptions.find((opt) => opt.months === selectedMSI);
     if (!selectedOption) return totalAmountCharged;
 
-    // Calcular comisión e IVA
-    const commission = totalAmountCharged * (selectedOption.rate / 100);
-    const ivaCommission = commission * 0.16;
-    return totalAmountCharged + commission + ivaCommission;
+    return totalAmountCharged / (1 - (selectedOption.rate / 100) * 1.16);
   };
 
   const displayTotal = getDisplayTotal();
@@ -220,19 +426,18 @@ export default function CardSelectionPage() {
   // Es cuando realmente se procesa el pago en el servidor
   const handleConfirmPayment = async () => {
     if (!pendingPaymentData) {
-      console.error("❌ No hay datos de pago pendientes");
       return;
     }
 
     const { paymentId, amount, paymentType } = pendingPaymentData;
 
     try {
-      console.log("✅ Procesando pago confirmado (después de 4 seg)...");
-
       const realPaymentMethodId =
-        selectedPaymentMethodId === "system-default-card"
+        isApplePayProcessing || isGooglePayProcessing
           ? null
-          : selectedPaymentMethodId;
+          : selectedPaymentMethodId === "system-default-card"
+            ? null
+            : selectedPaymentMethodId;
 
       // Obtener guest_id del contexto o de localStorage
       let currentGuestId = guestId;
@@ -273,15 +478,6 @@ export default function CardSelectionPage() {
           throw new Error("El monto del pago debe ser mayor a 0");
         }
 
-        console.log("💰 Parámetros del pago:", {
-          orderId: state.order?.order_id,
-          amount: baseAmount,
-          userId: user?.id,
-          guestId: !user?.id ? currentGuestId : null,
-          guestName: displayName,
-          paymentMethodId: realPaymentMethodId,
-        });
-
         await paymentService.payOrderAmount({
           orderId: state.order?.order_id!,
           amount: baseAmount,
@@ -301,7 +497,9 @@ export default function CardSelectionPage() {
         paymentId: paymentId,
         transactionId: paymentId,
         amount: amount,
-        totalAmountCharged: totalAmountCharged,
+        totalAmountCharged: selectedMSI ? displayTotal : totalAmountCharged,
+        installments: selectedMSI || null,
+        installmentBaseAmount: selectedMSI ? totalAmountCharged : null,
         baseAmount: baseAmount,
         tipAmount: tipAmount,
         ivaTip: ivaTip,
@@ -311,8 +509,16 @@ export default function CardSelectionPage() {
         ivaEvenRestaurant: ivaEvenRestaurant,
         paymentType: paymentType,
         userName: profile?.firstName || name,
-        cardLast4: selectedMethod?.lastFourDigits,
-        cardBrand: selectedMethod?.cardBrand,
+        cardLast4: isApplePayProcessing
+          ? "AP"
+          : isGooglePayProcessing
+            ? "GP"
+            : selectedMethod?.lastFourDigits,
+        cardBrand: isApplePayProcessing
+          ? "apple"
+          : isGooglePayProcessing
+            ? "google"
+            : selectedMethod?.cardBrand,
         items:
           paymentType === "select-items"
             ? unpaidDishes.filter((d) => selectedItems.includes(d.id))
@@ -326,16 +532,11 @@ export default function CardSelectionPage() {
         "even-completed-payment",
         JSON.stringify(paymentData),
       );
-      console.log("💾 Payment data saved to localStorage");
 
       // Operaciones en segundo plano
       const backgroundOperations = async () => {
         try {
-          console.log("🔄 Reloading table data after payment (background)...");
           await loadTableData();
-
-          // Registrar transacción de pago
-          console.log("📊 Recording payment transaction (background)");
 
           const transactionPaymentMethodId =
             selectedPaymentMethodId === "system-default-card"
@@ -357,13 +558,12 @@ export default function CardSelectionPage() {
             even_client_charge: evenClientCharge,
             even_restaurant_charge: evenRestaurantCharge,
             even_rate_applied: evenRateApplied,
-            total_amount_charged: totalAmountCharged,
+            total_amount_charged: selectedMSI
+              ? displayTotal
+              : totalAmountCharged,
             subtotal_for_commission: subtotalForCommission,
             currency: "MXN",
           });
-          console.log(
-            "✅ Payment transaction recorded successfully (background)",
-          );
         } catch (transactionError) {
           console.error("❌ Error in background operations:", transactionError);
         }
@@ -371,12 +571,26 @@ export default function CardSelectionPage() {
 
       backgroundOperations();
     } catch (error) {
-      console.error("❌ Error in handleConfirmPayment:", error);
+      const rawMessage =
+        error instanceof Error ? error.message : "Error desconocido";
+      const errorTranslations: Record<string, string> = {
+        "Transaction rejected by your bank, please try another card.":
+          "Tu banco rechazó la transacción. Por favor intenta con otra tarjeta.",
+        "Insufficient funds":
+          "Fondos insuficientes. Por favor intenta con otra tarjeta.",
+        "Card expired":
+          "Tu tarjeta está vencida. Por favor agrega una tarjeta vigente.",
+        "Invalid card number": "Número de tarjeta inválido.",
+        "An unknown error occurred":
+          "Ocurrió un error al procesar el pago. Por favor intenta de nuevo.",
+      };
       setShowPaymentAnimation(false);
       setIsProcessing(false);
       setIsAnimatingOut(false);
       setPendingPaymentData(null);
-      alert("Error al procesar el pago. Por favor intenta de nuevo.");
+      setIsApplePayProcessing(false);
+      setIsGooglePayProcessing(false);
+      setErrorMessage(errorTranslations[rawMessage] ?? rawMessage);
     }
   };
 
@@ -384,20 +598,15 @@ export default function CardSelectionPage() {
     if (isProcessing) return;
 
     if (!selectedPaymentMethodId) {
-      alert("Por favor selecciona un método de pago");
+      setErrorMessage("Por favor selecciona un método de pago");
       return;
     }
 
-    console.log("💳 Iniciando proceso de pago...");
     setIsProcessing(true);
 
     try {
       // Si se seleccionó la tarjeta del sistema, procesar pago directamente
       if (selectedPaymentMethodId === "system-default-card") {
-        console.log(
-          "💳 Sistema: Procesando pago con tarjeta del sistema (sin cargo real)",
-        );
-
         const mockPaymentId = `system-payment-${Date.now()}`;
 
         setPendingPaymentData({
@@ -421,9 +630,8 @@ export default function CardSelectionPage() {
 
       setShowPaymentAnimation(true);
     } catch (error) {
-      console.error("Error al preparar pago:", error);
       setIsProcessing(false);
-      alert("Error al procesar el pago. Por favor intenta de nuevo.");
+      setErrorMessage("Error al procesar el pago. Por favor intenta de nuevo.");
     }
   };
 
@@ -459,8 +667,7 @@ export default function CardSelectionPage() {
         setSelectedPaymentMethodId(null);
       }
     } catch (error) {
-      console.error("Error al eliminar tarjeta:", error);
-      alert("Error al eliminar el método de pago");
+      setErrorMessage("Error al eliminar el método de pago. Intenta de nuevo.");
     } finally {
       setDeletingCardId(null);
     }
@@ -519,7 +726,6 @@ export default function CardSelectionPage() {
             setIsProcessing(false);
             setIsAnimatingOut(false);
             setPendingPaymentData(null);
-            console.log("❌ Payment cancelled by user");
           }}
           onConfirm={handleConfirmPayment}
         />
@@ -585,7 +791,9 @@ export default function CardSelectionPage() {
                     const selectedMethod = allPaymentMethods.find(
                       (pm) => pm.id === selectedPaymentMethodId,
                     );
-                    return selectedMethod?.cardType === "credit" ? (
+                    return selectedMethod?.cardType === "credit" &&
+                      msiConfig.isActive &&
+                      totalAmountCharged >= 300 ? (
                       <div
                         className="py-2 cursor-pointer"
                         onClick={() => setShowPaymentOptionsModal(true)}
@@ -665,6 +873,70 @@ export default function CardSelectionPage() {
                         )}
                       </div>
                     ))}
+
+                    {/* Apple Pay */}
+                    {!applePayUnavailable && (
+                      <div className="relative w-full h-[48px]">
+                        <div id="apple-pay-container" className="w-full" />
+                        {!applePayReady && (
+                          <div className="absolute inset-0 rounded-full bg-black flex items-center justify-center gap-2">
+                            <span
+                              className="text-white text-xl leading-none"
+                              style={{
+                                fontFamily:
+                                  "-apple-system, BlinkMacSystemFont, sans-serif",
+                              }}
+                              aria-hidden="true"
+                            >
+                              {""}
+                            </span>
+                            <span className="text-white font-medium text-base tracking-wide">
+                              Pay
+                            </span>
+                            <Loader2 className="size-4 animate-spin text-white" />
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Google Pay */}
+                    {!googlePayUnavailable && (
+                      <div className="relative w-full h-[48px]">
+                        <div id="google-pay-container" className="w-full" />
+                        {!googlePayReady && (
+                          <div className="absolute inset-0 rounded-full bg-black flex items-center justify-center gap-2">
+                            <svg
+                              width="18"
+                              height="18"
+                              viewBox="0 0 18 18"
+                              fill="none"
+                              aria-hidden="true"
+                            >
+                              <path
+                                d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"
+                                fill="#4285F4"
+                              />
+                              <path
+                                d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z"
+                                fill="#34A853"
+                              />
+                              <path
+                                d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"
+                                fill="#FBBC05"
+                              />
+                              <path
+                                d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"
+                                fill="#EA4335"
+                              />
+                            </svg>
+                            <span className="text-white font-medium text-base tracking-wide">
+                              Pay
+                            </span>
+                            <Loader2 className="size-4 animate-spin text-white" />
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -810,27 +1082,8 @@ export default function CardSelectionPage() {
                   );
                   const cardBrand = selectedMethod?.cardBrand;
 
-                  // Configuración de MSI según el tipo de tarjeta
                   const msiOptions =
-                    cardBrand === "amex"
-                      ? [
-                          { months: 3, rate: 3.25, minAmount: 0 },
-                          { months: 6, rate: 6.25, minAmount: 0 },
-                          { months: 9, rate: 8.25, minAmount: 0 },
-                          { months: 12, rate: 10.25, minAmount: 0 },
-                          { months: 15, rate: 13.25, minAmount: 0 },
-                          { months: 18, rate: 15.25, minAmount: 0 },
-                          { months: 21, rate: 17.25, minAmount: 0 },
-                          { months: 24, rate: 19.25, minAmount: 0 },
-                        ]
-                      : [
-                          // Visa/Mastercard
-                          { months: 3, rate: 3.5, minAmount: 300 },
-                          { months: 6, rate: 5.5, minAmount: 600 },
-                          { months: 9, rate: 8.5, minAmount: 900 },
-                          { months: 12, rate: 11.5, minAmount: 1200 },
-                          { months: 18, rate: 15.0, minAmount: 1800 },
-                        ];
+                    cardBrand === "amex" ? msiConfig.amex : msiConfig.visaMc;
 
                   return (
                     <div className="space-y-2.5">
@@ -890,12 +1143,9 @@ export default function CardSelectionPage() {
                         return (
                           <>
                             {availableOptions.map((option) => {
-                              // Calcular comisión e IVA
-                              const commission =
-                                totalAmountCharged * (option.rate / 100);
-                              const ivaCommission = commission * 0.16;
                               const totalWithCommission =
-                                totalAmountCharged + commission + ivaCommission;
+                                totalAmountCharged /
+                                (1 - (option.rate / 100) * 1.16);
                               const monthlyPayment =
                                 totalWithCommission / option.months;
 
@@ -964,6 +1214,46 @@ export default function CardSelectionPage() {
           </div>
         )}
       </div>
+
+      {/* Modal de error de pago */}
+      {errorMessage && (
+        <div
+          className="fixed inset-0 z-99999 flex items-end justify-center bg-black/50"
+          onClick={() => setErrorMessage(null)}
+        >
+          <div
+            className="bg-white rounded-t-4xl w-full shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 max-w-2xl mx-auto">
+              <div className="flex flex-col items-center mb-4">
+                <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mb-4">
+                  <CircleAlert
+                    className="size-7 text-red-500"
+                    strokeWidth={2}
+                  />
+                </div>
+                <h2 className="text-xl font-semibold text-black text-center">
+                  Error al procesar el pago
+                </h2>
+              </div>
+
+              <div className="bg-[#f9f9f9] border border-[#bfbfbf]/50 rounded-xl p-4 mb-6">
+                <p className="text-gray-700 text-sm text-center">
+                  {errorMessage}
+                </p>
+              </div>
+
+              <button
+                onClick={() => setErrorMessage(null)}
+                className="w-full bg-linear-to-r from-[#34808C] to-[#173E44] text-white py-3 rounded-full text-base"
+              >
+                Intentar de nuevo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

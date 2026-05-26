@@ -25,11 +25,10 @@ export interface PaymentMethod {
 }
 
 export interface AddPaymentMethodRequest {
+  fullName: string;
   cardNumber: string;
-  expiryDate: string;
+  expDate: string;
   cvv: string;
-  cardholderName: string;
-  email?: string;
 }
 
 export interface ProcessPaymentRequest {
@@ -47,6 +46,19 @@ export interface PaymentHistory {
   amount: number;
   date: string;
   status: string;
+}
+
+export interface MsiOption {
+  months: number;
+  rate: number;
+  minAmount: number;
+  fixedInstallments: boolean;
+}
+
+export interface MsiConfig {
+  isActive: boolean;
+  visaMc: MsiOption[];
+  amex: MsiOption[];
 }
 
 class PaymentService {
@@ -75,18 +87,9 @@ class PaymentService {
   async addPaymentMethod(
     paymentData: AddPaymentMethodRequest,
   ): Promise<ApiResponse<{ paymentMethod: PaymentMethod }>> {
-    // Mapear campos del frontend a los esperados por el backend
-    const backendPayload = {
-      fullName: paymentData.cardholderName,
-      email: paymentData.email,
-      cardNumber: paymentData.cardNumber,
-      expDate: paymentData.expiryDate,
-      cvv: paymentData.cvv,
-    };
-
     return this.request("/payment-methods", {
       method: "POST",
-      body: JSON.stringify(backendPayload),
+      body: JSON.stringify(paymentData),
     });
   }
 
@@ -141,6 +144,38 @@ class PaymentService {
     return this.request("/payment-methods/migrate-from-guest", {
       method: "POST",
       body: JSON.stringify({ guestId }),
+    });
+  }
+
+  async getMsiConfiguration(): Promise<ApiResponse<MsiConfig>> {
+    return this.request("/payments/installment-config", { method: "GET" });
+  }
+
+  async createApplePayOrder(params: {
+    amount: number;
+    currency: string;
+    tableNumber?: string;
+    restaurantId?: string;
+    baseAmount?: number;
+    tipAmount?: number;
+  }): Promise<ApiResponse<{ orderId: string }>> {
+    return this.request("/payments/apple-pay/order", {
+      method: "POST",
+      body: JSON.stringify(params),
+    });
+  }
+
+  async createGooglePayOrder(params: {
+    amount: number;
+    currency: string;
+    tableNumber?: string;
+    restaurantId?: string;
+    baseAmount?: number;
+    tipAmount?: number;
+  }): Promise<ApiResponse<{ orderId: string }>> {
+    return this.request("/payments/google-pay/order", {
+      method: "POST",
+      body: JSON.stringify(params),
     });
   }
 

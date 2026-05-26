@@ -79,10 +79,6 @@ export default function PaymentSuccessPage() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      console.log(
-        "📦 Payment success page - checking storage for payment data",
-      );
-
       // Get payment ID from URL to identify this specific payment
       const urlPaymentId = paymentId || searchParams.get("transactionId");
 
@@ -95,7 +91,6 @@ export default function PaymentSuccessPage() {
       if (currentKeyRef) {
         storedPayment = sessionStorage.getItem(currentKeyRef);
         storageKey = currentKeyRef;
-        console.log("📦 Found payment via current-payment-key:", currentKeyRef);
       }
 
       // If not found, search all sessionStorage keys for payment success data
@@ -105,7 +100,6 @@ export default function PaymentSuccessPage() {
           if (key && key.startsWith("even-payment-success-")) {
             storedPayment = sessionStorage.getItem(key);
             storageKey = key;
-            console.log("📦 Found payment via sessionStorage search:", key);
             break;
           }
         }
@@ -132,13 +126,9 @@ export default function PaymentSuccessPage() {
         }
       }
 
-      console.log("📦 Found payment data in:", storageKey);
-      console.log("📦 Raw stored data:", storedPayment);
-
       if (storedPayment) {
         try {
           const parsed = JSON.parse(storedPayment);
-          console.log("📦 Parsed payment details:", parsed);
           setPaymentDetails(parsed);
 
           // If from localStorage (first time), save to sessionStorage for persistence
@@ -164,8 +154,6 @@ export default function PaymentSuccessPage() {
         } catch (e) {
           console.error("Failed to parse stored payment details:", e);
         }
-      } else {
-        console.log("📦 No payment data found in storage");
       }
     }
   }, [paymentId, searchParams]);
@@ -228,30 +216,17 @@ export default function PaymentSuccessPage() {
 
   // Handle rating selection
   const handleRatingClick = (starRating: number) => {
-    if (hasRated) {
-      console.log("⚠️ User has already rated");
-      return;
-    }
+    if (hasRated) return;
     setRating(starRating);
   };
 
   // Handle rating submission
   const handleSubmitRating = async () => {
-    if (hasRated || rating === 0) {
-      return;
-    }
+    if (hasRated || rating === 0) return;
 
-    if (!restaurant?.id) {
-      console.error("❌ No restaurant ID available");
-      return;
-    }
+    if (!restaurant?.id) return;
 
     try {
-      console.log("🔍 Submitting restaurant review:", {
-        restaurant_id: restaurant.id,
-        rating: rating,
-      });
-
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/restaurants/restaurant-reviews`,
         {
@@ -269,10 +244,7 @@ export default function PaymentSuccessPage() {
       const data = await response.json();
 
       if (data.success) {
-        console.log("✅ Restaurant review submitted successfully");
         setHasRated(true);
-      } else {
-        console.error("❌ Failed to submit restaurant review:", data.message);
       }
     } catch (error) {
       console.error("❌ Error submitting restaurant review:", error);
@@ -481,15 +453,19 @@ export default function PaymentSuccessPage() {
                   {paymentDetails?.cardLast4 && (
                     <div className="flex items-center gap-2 md:gap-3 lg:gap-4 text-white/90">
                       <div className="bg-green-100 p-2 md:p-2.5 lg:p-3 rounded-xl flex items-center justify-center">
-                        <div className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 flex items-center justify-center">
+                        <div className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 flex items-center justify-center scale-150">
                           {getCardTypeIcon(
                             paymentDetails.cardBrand || "unknown",
-                            "small",
+                            "medium",
                           )}
                         </div>
                       </div>
                       <span className="text-sm md:text-base lg:text-lg">
-                        *** {paymentDetails.cardLast4.slice(-3)}
+                        {paymentDetails.cardBrand === "apple"
+                          ? "Apple Pay"
+                          : paymentDetails.cardBrand === "google"
+                            ? "Google Pay"
+                            : `**** ${paymentDetails.cardLast4.slice(-4)}`}
                       </span>
                     </div>
                   )}
@@ -600,9 +576,16 @@ export default function PaymentSuccessPage() {
                     />
                   </button>
                 </div>
-                <span className="text-lg md:text-xl lg:text-2xl font-medium text-white">
-                  ${amount.toFixed(2)} MXN
-                </span>
+                {paymentDetails?.installments ? (
+                  <span className="text-lg md:text-xl lg:text-2xl font-medium text-white">
+                    {paymentDetails.installments}x $
+                    {(amount / paymentDetails.installments).toFixed(2)} MXN
+                  </span>
+                ) : (
+                  <span className="text-lg md:text-xl lg:text-2xl font-medium text-white">
+                    ${amount.toFixed(2)} MXN
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -678,6 +661,22 @@ export default function PaymentSuccessPage() {
                       {(
                         (paymentDetails?.evenCommissionClient || 0) +
                         (paymentDetails?.ivaEvenClient || 0)
+                      ).toFixed(2)}{" "}
+                      MXN
+                    </span>
+                  </div>
+                )}
+
+                {paymentDetails?.installments && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-black font-medium text-base md:text-lg lg:text-xl">
+                      + Financiamiento ({paymentDetails.installments} meses)
+                    </span>
+                    <span className="text-black font-medium text-base md:text-lg lg:text-xl">
+                      $
+                      {(
+                        (paymentDetails.totalAmountCharged || 0) -
+                        (paymentDetails.installmentBaseAmount || 0)
                       ).toFixed(2)}{" "}
                       MXN
                     </span>
