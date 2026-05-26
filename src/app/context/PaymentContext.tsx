@@ -184,22 +184,26 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
       throw new Error("Debes estar autenticado para eliminar tarjetas");
     }
 
-    try {
-      // Auth token is automatically managed by AuthContext and paymentService
+    // Optimistic update: remove immediately, restore on failure
+    const deletedMethod = paymentMethods.find(
+      (pm) => pm.id === paymentMethodId,
+    );
+    removePaymentMethod(paymentMethodId);
 
+    try {
       const response =
         await paymentService.deletePaymentMethod(paymentMethodId);
 
-      if (response.success) {
-        removePaymentMethod(paymentMethodId);
-      } else {
+      if (!response.success) {
         console.error("❌ Delete payment method failed:", response.error);
+        if (deletedMethod) addPaymentMethod(deletedMethod);
         throw new Error(
           response.error?.message || "No se pudo eliminar la tarjeta",
         );
       }
     } catch (error) {
       console.error("❌ Error deleting payment method:", error);
+      if (deletedMethod) addPaymentMethod(deletedMethod);
       throw error;
     }
   };
