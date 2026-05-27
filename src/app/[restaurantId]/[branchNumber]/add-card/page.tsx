@@ -95,10 +95,7 @@ function AddCardContent() {
       return;
     }
 
-    const lastFourDigits = cardNumber
-      .replace(/\s+/g, "")
-      .slice(-4)
-      .substring(0, 3);
+    const lastFourDigits = cardNumber.replace(/\s+/g, "").slice(-4);
     const isDuplicate = paymentMethods.some(
       (method) => method.lastFourDigits === lastFourDigits,
     );
