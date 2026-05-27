@@ -838,7 +838,7 @@ export default function CardSelectionPage() {
                           <div>{getCardTypeIcon(method.cardBrand)}</div>
                           <div>
                             <p className="text-black">
-                              **** **** **** {method.lastFourDigits}
+                              **** {method.lastFourDigits}
                             </p>
                           </div>
                         </div>
