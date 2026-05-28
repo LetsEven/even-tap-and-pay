@@ -107,12 +107,14 @@ export function calculateCommissions(
   const ivaEvenClient = evenCommissionClient * 0.16;
   const ivaEvenRestaurant = evenCommissionRestaurant * 0.16;
 
+  const r2 = (n: number) => Math.round(n * 100) / 100;
+
   // Comisión Even con IVA incluido
-  const evenClientCharge = evenCommissionClient + ivaEvenClient;
-  const evenRestaurantCharge = evenCommissionRestaurant + ivaEvenRestaurant;
+  const evenClientCharge = r2(evenCommissionClient + ivaEvenClient);
+  const evenRestaurantCharge = r2(evenCommissionRestaurant + ivaEvenRestaurant);
 
   // Total cobrado al cliente
-  const totalAmountCharged = baseAmount + tipAmount + evenClientCharge;
+  const totalAmountCharged = r2(baseAmount + tipAmount + evenClientCharge);
 
   return {
     baseAmount,
