@@ -44,19 +44,19 @@ export interface CommissionBreakdown {
  * - > $150: Even 4.0% (Cliente 2.0%, Restaurante 2.0%)
  */
 export function getCommissionRates(amount: number): CommissionRates {
-  if (amount >= 20 && amount <= 30) {
+  if (amount >= 20 && amount < 31) {
     return {
       evenTotal: 11.0,
       clientPays: 9.0,
       restaurantPays: 2.0,
     };
-  } else if (amount >= 31 && amount <= 49) {
+  } else if (amount >= 31 && amount < 50) {
     return {
       evenTotal: 8.0,
       clientPays: 6.0,
       restaurantPays: 2.0,
     };
-  } else if (amount >= 50 && amount <= 100) {
+  } else if (amount >= 50 && amount < 101) {
     return {
       evenTotal: 5.8,
       clientPays: 3.8,
