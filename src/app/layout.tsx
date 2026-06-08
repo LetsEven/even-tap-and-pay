@@ -8,6 +8,7 @@ import { TableProvider } from "@/app/context/TableContext";
 import { PaymentProvider } from "@/app/context/PaymentContext";
 import { GuestProvider } from "./context/GuestContext";
 import { SocketProvider } from "./context/SocketContext";
+import Script from "next/script";
 
 const helveticaNeue = localFont({
   src: [
@@ -107,11 +108,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Read nonce from middleware for CSP compliance (PCI DSS)
-  // Use this nonce in any <Script nonce={nonce}> components
   const headersList = await headers();
   const nonce = headersList.get("x-nonce") ?? undefined;
-  // Suppress unused variable warning - nonce available for future Script components
   void nonce;
 
   return (
@@ -120,6 +118,10 @@ export default async function RootLayout({
         className={`${helveticaNeue.variable} antialiased`}
         style={{ fontFamily: "var(--font-helvetica-neue)" }}
       >
+        <Script
+          src="https://ecartpay.com/sdk/pay.js?v=2"
+          strategy="afterInteractive"
+        />
         <AuthProvider>
           <GuestProvider>
             <RestaurantProvider>
