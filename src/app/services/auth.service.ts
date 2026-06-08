@@ -94,32 +94,17 @@ class AuthService {
         this.isRefreshing = false;
         return newToken;
       } else {
-        // Refresh falló, hacer logout
+        console.warn("⚠️ Token refresh rejected, clearing local session");
         this.isRefreshing = false;
-        await this.logout();
+        this.onRefreshed("");
         this.clearAuthToken();
         this.clearAllSessionData();
-
-        // Redirigir a login si estamos en el navegador
-        if (typeof window !== "undefined") {
-          window.location.href = "/";
-        }
-
         return null;
       }
     } catch (error) {
-      console.error("Error in handleTokenRefresh:", error);
+      console.error("❌ Unexpected error in handleTokenRefresh:", error);
       this.isRefreshing = false;
-
-      // Hacer logout en caso de error
-      await this.logout();
-      this.clearAuthToken();
-      this.clearAllSessionData();
-
-      if (typeof window !== "undefined") {
-        window.location.href = "/";
-      }
-
+      this.onRefreshed("");
       return null;
     }
   }
