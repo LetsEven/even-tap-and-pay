@@ -228,18 +228,22 @@ class PaymentService {
   async payOrderAmount(params: {
     orderId: string;
     amount: number;
+    tipAmount?: number;
     userId?: string;
     guestId?: string | null;
     guestName?: string | null;
     paymentMethodId: string | null;
+    paymentSource?: string | null;
   }): Promise<ApiResponse<any>> {
     return this.request(`/tap-pay/orders/${params.orderId}/pay-amount`, {
       method: "POST",
       body: JSON.stringify({
         amount: params.amount,
+        tipAmount: params.tipAmount ?? 0,
         userId: params.userId,
         guestId: params.guestId,
         guestName: params.guestName,
+        paymentSource: params.paymentSource ?? null,
       }),
     });
   }
@@ -248,17 +252,21 @@ class PaymentService {
   // NOTA: No se envía paymentMethodId - solo registra el pago de la división
   async paySplitAmount(params: {
     orderId: string;
+    tipAmount?: number;
     userId?: string;
     guestId?: string | null;
     guestName?: string | null;
     paymentMethodId: string | null;
+    paymentSource?: string | null;
   }): Promise<ApiResponse<any>> {
     return this.request(`/tap-pay/orders/${params.orderId}/pay-split`, {
       method: "POST",
       body: JSON.stringify({
+        tipAmount: params.tipAmount ?? 0,
         userId: params.userId,
         guestId: params.guestId,
         guestName: params.guestName,
+        paymentSource: params.paymentSource ?? null,
       }),
     });
   }
@@ -282,6 +290,8 @@ class PaymentService {
     total_amount_charged: number;
     subtotal_for_commission: number;
     currency: string;
+    transaction_by?: string;
+    payment_source?: string | null;
   }): Promise<ApiResponse<any>> {
     return this.request("/payment-transactions", {
       method: "POST",

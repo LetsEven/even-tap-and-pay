@@ -15,7 +15,7 @@ export type TapPayOrderResponse = TapPayOrder;
 class OrderService {
   private async request<T>(
     endpoint: string,
-    options?: RequestInit
+    options?: RequestInit,
   ): Promise<ApiResponse<T>> {
     return requestWithAuth<T>(endpoint, options);
   }
@@ -24,17 +24,17 @@ class OrderService {
   async getActiveOrderByTable(
     restaurantId: string,
     branchNumber: string,
-    tableNumber: string
+    tableNumber: string,
   ): Promise<ApiResponse<TapPayOrderResponse>> {
     return this.request(
       `/tap-pay/restaurants/${restaurantId}/branches/${branchNumber}/tables/${tableNumber}/order`,
-      { method: "GET" }
+      { method: "GET" },
     );
   }
 
   // Obtener orden por ID
   async getOrderById(
-    orderId: string
+    orderId: string,
   ): Promise<ApiResponse<TapPayOrderResponse>> {
     return this.request(`/tap-pay/orders/${orderId}`, { method: "GET" });
   }
@@ -46,9 +46,16 @@ class OrderService {
     });
   }
 
+  // Sincronizar orden con POS (agrega platillos nuevos del POS a Supabase)
+  async syncOrderFromPOS(orderId: string): Promise<ApiResponse<any>> {
+    return this.request(`/tap-pay/orders/${orderId}/sync-from-pos`, {
+      method: "POST",
+    });
+  }
+
   // Procesar pago
   async processPayment(
-    paymentRequest: PaymentRequest
+    paymentRequest: PaymentRequest,
   ): Promise<ApiResponse<PaymentResult>> {
     return this.request(`/tap-pay/orders/${paymentRequest.orderId}/pay`, {
       method: "POST",
@@ -59,7 +66,7 @@ class OrderService {
   // Pagar un platillo específico
   async payDishOrder(
     dishId: string,
-    paymentMethodId: string | null
+    paymentMethodId: string | null,
   ): Promise<ApiResponse<any>> {
     return this.request(`/tap-pay/dishes/${dishId}/pay`, {
       method: "POST",
@@ -73,7 +80,7 @@ class OrderService {
     amount: number,
     paymentMethodId: string | null,
     userId?: string,
-    guestName?: string
+    guestName?: string,
   ): Promise<ApiResponse<any>> {
     return this.request(`/tap-pay/orders/${orderId}/pay-amount`, {
       method: "POST",
@@ -86,7 +93,7 @@ class OrderService {
     orderId: string,
     numberOfPeople: number,
     userIds?: string[],
-    guestNames?: string[]
+    guestNames?: string[],
   ): Promise<ApiResponse<any>> {
     return this.request(`/tap-pay/orders/${orderId}/split-bill`, {
       method: "POST",
@@ -99,7 +106,7 @@ class OrderService {
     orderId: string,
     paymentMethodId: string | null,
     userId?: string,
-    guestName?: string
+    guestName?: string,
   ): Promise<ApiResponse<any>> {
     return this.request(`/tap-pay/orders/${orderId}/pay-split`, {
       method: "POST",
@@ -126,7 +133,7 @@ class OrderService {
     orderId: string,
     userId?: string,
     guestId?: string | null,
-    guestName?: string
+    guestName?: string,
   ): Promise<ApiResponse<any>> {
     return this.request(`/tap-pay/orders/${orderId}/active-users`, {
       method: "POST",
@@ -137,7 +144,7 @@ class OrderService {
   // Actualizar estado de orden
   async updateOrderStatus(
     orderId: string,
-    orderStatus: TapPayOrder["order_status"]
+    orderStatus: TapPayOrder["order_status"],
   ): Promise<ApiResponse<any>> {
     return this.request(`/tap-pay/orders/${orderId}/status`, {
       method: "PUT",
@@ -148,7 +155,7 @@ class OrderService {
   // Actualizar estado de platillo
   async updateDishStatus(
     dishId: string,
-    status: DishOrder["status"]
+    status: DishOrder["status"],
   ): Promise<ApiResponse<any>> {
     return this.request(`/tap-pay/dishes/${dishId}/status`, {
       method: "PUT",
