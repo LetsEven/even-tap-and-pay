@@ -24,7 +24,7 @@ export default function CardSelectionPage() {
   const { hasPaymentMethods, paymentMethods, deletePaymentMethod } =
     usePayment();
   const { user, profile, isLoading: authLoading } = useAuth();
-  const { guestId } = useGuest();
+  const { guestId, guestName: contextGuestName } = useGuest();
   const { msiConfig } = useMsiConfig();
 
   // Tarjeta por defecto del sistema
@@ -449,7 +449,7 @@ export default function CardSelectionPage() {
       const displayName = user?.id
         ? `${profile?.firstName || ""} ${profile?.lastName || ""}`.trim() ||
           "Usuario"
-        : name.trim() || "Invitado";
+        : (contextGuestName || name).trim() || "Invitado";
 
       // Ejecutar el pago según el tipo (incluyendo tarjeta del sistema)
       if (paymentType === "select-items") {
@@ -463,10 +463,16 @@ export default function CardSelectionPage() {
       } else if (paymentType === "equal-shares") {
         await paymentService.paySplitAmount({
           orderId: state.order?.order_id!,
+          tipAmount: tipAmount,
           userId: user?.id,
           guestId: !user?.id ? currentGuestId : null,
           guestName: displayName,
           paymentMethodId: realPaymentMethodId,
+          paymentSource: isApplePayProcessing
+            ? "apple_pay"
+            : isGooglePayProcessing
+              ? "google_pay"
+              : null,
         });
       } else if (
         paymentType === "full-bill" ||
@@ -481,10 +487,16 @@ export default function CardSelectionPage() {
         await paymentService.payOrderAmount({
           orderId: state.order?.order_id!,
           amount: baseAmount,
+          tipAmount: tipAmount,
           userId: user?.id,
           guestId: !user?.id ? currentGuestId : null,
           guestName: displayName,
           paymentMethodId: realPaymentMethodId,
+          paymentSource: isApplePayProcessing
+            ? "apple_pay"
+            : isGooglePayProcessing
+              ? "google_pay"
+              : null,
         });
       }
 
@@ -563,6 +575,12 @@ export default function CardSelectionPage() {
               : totalAmountCharged,
             subtotal_for_commission: subtotalForCommission,
             currency: "MXN",
+            transaction_by: displayName,
+            payment_source: isApplePayProcessing
+              ? "apple_pay"
+              : isGooglePayProcessing
+                ? "google_pay"
+                : null,
           });
         } catch (transactionError) {
           console.error("❌ Error in background operations:", transactionError);

@@ -44,7 +44,14 @@ export default function OrderPage() {
     }
   }, [searchParams, setTableNumber]);
 
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
+    if (state.order?.order_id) {
+      try {
+        await orderService.syncOrderFromPOS(state.order.order_id);
+      } catch {
+        // Sync failed (e.g. no POS agent), still reload local data
+      }
+    }
     loadTableData();
   };
 
@@ -283,7 +290,7 @@ export default function OrderPage() {
                                       <img
                                         src={
                                           dish.images?.[0] ??
-                                          "/logo-short-green.webp"
+                                          "/logos/logo-short-green.webp"
                                         }
                                         alt={dish.item}
                                         className="w-full h-full object-cover rounded-sm md:rounded-md"
