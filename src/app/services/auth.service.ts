@@ -32,6 +32,8 @@ interface VerifyOTPResponse {
 export interface AuthResponse {
   success: boolean;
   message?: string;
+  /** HTTP status de la respuesta; ausente en errores de red */
+  status?: number;
   data?: {
     user: {
       id: string;
@@ -93,12 +95,26 @@ class AuthService {
         this.onRefreshed(newToken);
         this.isRefreshing = false;
         return newToken;
-      } else {
-        console.warn("⚠️ Token refresh rejected, clearing local session");
+      } else if (result.status === 401) {
+        // El servidor rechazó el refresh token (inválido/revocado) — única
+        // situación en la que se limpia la sesión local
+        console.warn(
+          "⚠️ Token refresh rejected by server, clearing local session",
+        );
         this.isRefreshing = false;
         this.onRefreshed("");
         this.clearAuthToken();
         this.clearAllSessionData();
+        return null;
+      } else {
+        // Error de red o del servidor (5xx) — los tokens pueden seguir siendo
+        // válidos, conservar la sesión y reintentar más tarde
+        console.warn(
+          "⚠️ Transient refresh failure, keeping session:",
+          result.error,
+        );
+        this.isRefreshing = false;
+        this.onRefreshed("");
         return null;
       }
     } catch (error) {
@@ -467,7 +483,7 @@ class AuthService {
         }
       }
 
-      return data;
+      return { ...data, status: response.status };
     } catch (error) {
       console.error("Error refreshing token:", error);
       return {
