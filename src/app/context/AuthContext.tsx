@@ -260,12 +260,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // Response no exitoso - posiblemente token inválido
-      console.error("❌ Profile load failed:", response.error);
-      return false;
+      // Cerrar sesión si no hay token o si el servidor rechazó el refresh
+      // (la sesión murió de verdad). Otros errores son fallas de red
+      // transitorias y conservan la sesión para reintentar luego.
+      if (
+        response.error === "No estás autenticado" ||
+        response.error === "Sesión expirada"
+      ) {
+        console.error("❌ Profile load failed, session invalid:", response.error);
+        return false;
+      }
+
+      console.warn(
+        "⚠️ Could not load profile on startup, keeping session:",
+        response.error,
+      );
+      return true;
     } catch (error) {
-      console.error("❌ Error loading profile:", error);
-      return false;
+      // Error de red — mantener sesión, no desloguear
+      console.error(
+        "❌ Network error loading profile, keeping session:",
+        error,
+      );
+      return true;
     }
   };
 

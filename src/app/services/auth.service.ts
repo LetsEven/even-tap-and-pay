@@ -270,9 +270,15 @@ class AuthService {
             },
           });
         } else {
+          // handleTokenRefresh borra los tokens solo cuando el servidor
+          // rechaza el refresh (401). Si ya no hay token, la sesión murió de
+          // verdad → el llamador debe desloguear. Si sigue, fue error de red
+          // transitorio y no hay que cerrar la sesión.
           return {
             success: false,
-            error: "Sesión expirada",
+            error: this.getAccessToken()
+              ? "Error al renovar la sesión"
+              : "Sesión expirada",
           };
         }
       }
