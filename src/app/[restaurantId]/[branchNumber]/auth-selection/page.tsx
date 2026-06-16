@@ -1,15 +1,192 @@
 "use client";
 
-import { UserCircle2, LogIn } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Phone, ChevronDown, User } from "lucide-react";
+import Flag from "react-world-flags";
 import { useTableNavigation } from "@/app/hooks/useTableNavigation";
 import MenuHeader from "@/app/components/headers/MenuHeader";
+import { authService } from "@/app/services/auth.service";
+import { useAuth } from "@/app/context/AuthContext";
+
+type Step = "phone" | "verify" | "profile";
+
+interface Country {
+  code: string;
+  flag: string;
+  name: string;
+}
+
+const countries: Country[] = [
+  { code: "+52", flag: "MX", name: "México" },
+  { code: "+1", flag: "US", name: "Estados Unidos" },
+  { code: "+34", flag: "ES", name: "España" },
+  { code: "+54", flag: "AR", name: "Argentina" },
+  { code: "+57", flag: "CO", name: "Colombia" },
+  { code: "+58", flag: "VE", name: "Venezuela" },
+];
 
 export default function AuthSelectionPage() {
   const { navigateWithTable } = useTableNavigation();
+  const {
+    verifyOTP,
+    createOrUpdateProfile: updateProfile,
+    refreshProfile,
+  } = useAuth();
 
-  const handleContinue = () => {
-    sessionStorage.setItem("authFromPaymentFlow", "true");
-    navigateWithTable("/auth");
+  const [step, setStep] = useState<Step>("phone");
+  const [countryCode, setCountryCode] = useState("+52");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneNumberDisplay, setPhoneNumberDisplay] = useState("");
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [age, setAge] = useState<number | "">("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [countdown, setCountdown] = useState(0);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const formatPhoneNumber = (num: string) => {
+    if (!num) return "";
+    const cleaned = num.replace(/\D/g, "");
+    if (cleaned.length === 10)
+      return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 6)} ${cleaned.slice(6)}`;
+    if (cleaned.length > 10) {
+      const cc = cleaned.slice(0, cleaned.length - 10);
+      const area = cleaned.slice(-10, -7);
+      const first = cleaned.slice(-7, -4);
+      const last = cleaned.slice(-4);
+      return `+${cc} (${area}) ${first}-${last}`;
+    }
+    return num;
+  };
+
+  const formatPhoneInput = (value: string) => {
+    const cleaned = value.replace(/\D/g, "");
+    if (cleaned.length <= 3) return cleaned;
+    if (cleaned.length <= 6)
+      return `${cleaned.slice(0, 3)} ${cleaned.slice(3)}`;
+    if (cleaned.length <= 10)
+      return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 6)} ${cleaned.slice(6)}`;
+    return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 6)} ${cleaned.slice(6, 10)}`;
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest(".country-selector")) setIsDropdownOpen(false);
+    };
+    if (isDropdownOpen)
+      document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isDropdownOpen]);
+
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
+
+  const handleSendOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      const fullPhone = countryCode + phoneNumber;
+      setPhone(fullPhone);
+      const response = await authService.sendOTPCode(fullPhone);
+      if (response.success) {
+        setStep("verify");
+        setCountdown(60);
+      } else {
+        setError(response.error || "Error al enviar el código");
+      }
+    } catch {
+      setError("Error al enviar el código OTP");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    if (otp.length !== 6) {
+      setError("El código debe tener 6 dígitos");
+      setLoading(false);
+      return;
+    }
+    try {
+      const response = await verifyOTP(phone, otp);
+      if (response.success) {
+        const profileResponse = await authService.getMyProfile();
+        if (profileResponse.success && profileResponse.data) {
+          const responseData = profileResponse.data as any;
+          const profile =
+            responseData.data?.profile ||
+            responseData.profile ||
+            responseData.data ||
+            responseData;
+          if (profile.firstName) {
+            await refreshProfile();
+            navigateWithTable("/card-selection");
+          } else {
+            setStep("profile");
+          }
+        } else {
+          setStep("profile");
+        }
+      } else {
+        setError(response.error || "Código inválido");
+      }
+    } catch {
+      setError("Error al verificar el código");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOTP = async () => {
+    if (countdown > 0) return;
+    setError("");
+    setLoading(true);
+    try {
+      const response = await authService.sendOTPCode(phone);
+      if (response.success) setCountdown(60);
+      else setError(response.error || "Error al reenviar el código");
+    } catch {
+      setError("Error al reenviar el código");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleProfileSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (age === "") return;
+    setError("");
+    setLoading(true);
+    try {
+      const birthYear = new Date().getUTCFullYear() - Number(age);
+      const response = await updateProfile({
+        firstName,
+        lastName,
+        birthDate: `${birthYear}-01-01`,
+      });
+      if (response.success) {
+        await refreshProfile();
+        navigateWithTable("/card-selection");
+      } else {
+        setError(response.error || "Error al guardar el perfil");
+      }
+    } catch {
+      setError("Error al guardar el perfil");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -18,54 +195,241 @@ export default function AuthSelectionPage() {
 
       <div className="flex-1 flex flex-col items-center justify-center px-5 md:px-8 lg:px-10 pb-12 md:py-10 lg:py-12">
         <div className="w-full max-w-md">
-          {/* Text */}
-          <div className="mb-6 md:mb-8 lg:mb-10 text-center">
-            <h1 className="text-white text-xl md:text-2xl lg:text-3xl font-medium mb-2 md:mb-3 lg:mb-4">
-              ¿Cómo deseas continuar?
+          {/* Title */}
+          <div className="mb-6 md:mb-8 text-center">
+            <h1 className="text-white text-xl md:text-2xl lg:text-3xl font-medium mb-2">
+              {step === "phone"
+                ? "¿Cómo deseas continuar?"
+                : step === "verify"
+                  ? "Verifica tu código"
+                  : "Completa tu perfil"}
             </h1>
-            <p className="text-white/80 text-sm md:text-base lg:text-lg">
-              Elige una opción para proceder con tu pedido
+            <p className="text-white/80 text-sm md:text-base">
+              {step === "phone"
+                ? "Ingresa tu número para acceder o crear tu cuenta"
+                : step === "verify"
+                  ? `Enviamos un código al ${formatPhoneNumber(phone)}`
+                  : "Cuéntanos un poco más sobre ti"}
             </p>
           </div>
 
-          {/* Options */}
-          <div className="space-y-3 md:space-y-4 lg:space-y-5">
-            {/* Sign In Option */}
-            <button
-              onClick={handleContinue}
-              className="w-full bg-white hover:bg-gray-50 text-black py-4 md:py-5 lg:py-6 px-4 md:px-5 lg:px-6 rounded-xl md:rounded-2xl transition-all duration-200 flex items-center gap-3 md:gap-4 lg:gap-5 active:scale-95"
-            >
-              <div className="bg-linear-to-r from-[#34808C] to-[#173E44] p-2 md:p-2.5 lg:p-3 rounded-full group-hover:scale-110 transition-transform">
-                <LogIn className="size-5 md:size-6 lg:size-7 text-white" />
-              </div>
-              <div className="flex-1 text-left">
-                <h2 className="text-base md:text-lg lg:text-xl font-medium mb-0.5 md:mb-1">
-                  Iniciar sesión
-                </h2>
-                <p className="text-xs md:text-sm lg:text-base text-gray-600">
-                  Accede a tu cuenta y disfruta beneficios
-                </p>
-              </div>
-            </button>
+          {/* Error */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-500/20 border border-red-500 rounded-lg text-white text-sm">
+              {error}
+            </div>
+          )}
 
-            {/* Guest Option */}
-            <button
-              onClick={() => navigateWithTable("/user")}
-              className="w-full bg-white/10 hover:bg-white/20 border-2 border-white text-white py-4 md:py-5 lg:py-6 px-4 md:px-5 lg:px-6 rounded-xl md:rounded-2xl transition-all duration-200 flex items-center gap-3 md:gap-4 lg:gap-5 group active:scale-95"
-            >
-              <div className="bg-white/20 p-2 md:p-2.5 lg:p-3 rounded-full group-hover:scale-110 transition-transform">
-                <UserCircle2 className="size-5 md:size-6 lg:size-7 text-white" />
-              </div>
-              <div className="flex-1 text-left">
-                <h2 className="text-base md:text-lg lg:text-xl font-medium mb-0.5 md:mb-1">
+          {/* Phone Step */}
+          {step === "phone" && (
+            <div className="space-y-4">
+              <form onSubmit={handleSendOTP} className="space-y-3">
+                <div className="space-y-2">
+                  <div className="flex gap-3">
+                    {/* Country Code Selector */}
+                    <div className="relative country-selector">
+                      <button
+                        type="button"
+                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        className="h-[52px] w-[90px] px-3 text-gray-700 font-medium bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0a8b9b] cursor-pointer flex items-center justify-between gap-1.5"
+                        disabled={loading}
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <Flag
+                            code={
+                              countries.find((c) => c.code === countryCode)
+                                ?.flag || "MX"
+                            }
+                            style={{ width: 20, height: 15, borderRadius: 2 }}
+                          />
+                          <span className="text-sm">{countryCode}</span>
+                        </div>
+                        <ChevronDown className="size-3 text-gray-500 shrink-0" />
+                      </button>
+
+                      {isDropdownOpen && (
+                        <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg z-50 overflow-hidden">
+                          {countries.map((country) => (
+                            <button
+                              key={country.code}
+                              type="button"
+                              onClick={() => {
+                                setCountryCode(country.code);
+                                setIsDropdownOpen(false);
+                              }}
+                              className="w-full px-3 py-2 flex items-center gap-2 hover:bg-gray-100 transition-colors text-left"
+                            >
+                              <Flag
+                                code={country.flag}
+                                style={{
+                                  width: 20,
+                                  height: 15,
+                                  borderRadius: 2,
+                                }}
+                              />
+                              <span className="text-sm font-medium text-gray-700">
+                                {country.code}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Phone Input */}
+                    <div className="relative flex-1">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400 pointer-events-none" />
+                      <input
+                        required
+                        type="tel"
+                        value={phoneNumberDisplay}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, "");
+                          setPhoneNumber(value);
+                          setPhoneNumberDisplay(formatPhoneInput(value));
+                        }}
+                        className="h-[52px] w-full pl-10 pr-3 text-gray-700 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0a8b9b]"
+                        placeholder="Número de teléfono"
+                        disabled={loading}
+                        maxLength={14}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading || !phoneNumber || phoneNumber.length < 8}
+                  className="w-full bg-black hover:bg-stone-950 text-white py-3.5 rounded-full font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+                >
+                  {loading ? "Enviando..." : "Acceder"}
+                </button>
+              </form>
+
+              {/* Guest link */}
+              <div className="text-center pt-1">
+                <button
+                  onClick={() => navigateWithTable("/user")}
+                  className="text-white/70 hover:text-white text-sm underline underline-offset-2 transition-colors"
+                >
                   Continuar como invitado
-                </h2>
-                <p className="text-xs md:text-sm lg:text-base text-white/80">
-                  Procede sin crear una cuenta
-                </p>
+                </button>
               </div>
-            </button>
-          </div>
+            </div>
+          )}
+
+          {/* OTP Step */}
+          {step === "verify" && (
+            <form onSubmit={handleVerifyOTP} className="space-y-4">
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                placeholder="000000"
+                className="w-full px-3 py-3 text-gray-700 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0a8b9b] text-center tracking-widest text-2xl"
+                required
+                disabled={loading}
+                autoFocus
+                autoComplete="one-time-code"
+              />
+              <button
+                type="submit"
+                disabled={loading || otp.length !== 6}
+                className="w-full bg-black hover:bg-stone-950 text-white py-3.5 rounded-full font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+              >
+                {loading ? "Verificando..." : "Verificar código"}
+              </button>
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={handleResendOTP}
+                  disabled={countdown > 0 || loading}
+                  className={`text-sm underline transition-colors ${
+                    countdown > 0
+                      ? "text-white/40 cursor-not-allowed"
+                      : "text-white/80 hover:text-white cursor-pointer"
+                  }`}
+                >
+                  {countdown > 0
+                    ? `Reenviar código en ${countdown}s`
+                    : "¿No recibiste el código? Reenviar"}
+                </button>
+              </div>
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep("phone");
+                    setOtp("");
+                    setError("");
+                  }}
+                  className="text-sm text-white/80 hover:text-white underline"
+                >
+                  Cambiar número
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Profile Step */}
+          {step === "profile" && (
+            <form onSubmit={handleProfileSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="Nombre"
+                    className="h-[48px] w-full pl-10 pr-3 text-gray-600 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0a8b9b] appearance-none"
+                    required
+                    disabled={loading}
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder="Apellido"
+                  className="h-[48px] w-full px-3 text-gray-600 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0a8b9b] appearance-none"
+                  disabled={loading}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-white mb-1">
+                  Edad
+                </label>
+                <select
+                  required
+                  value={age}
+                  onChange={(e) =>
+                    setAge(e.target.value === "" ? "" : Number(e.target.value))
+                  }
+                  className="h-[48px] w-full px-3 text-gray-600 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0a8b9b] cursor-pointer appearance-none"
+                  disabled={loading}
+                >
+                  <option value="" disabled>
+                    Selecciona tu edad
+                  </option>
+                  {Array.from({ length: 59 }, (_, i) => i + 12).map((n) => (
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button
+                type="submit"
+                disabled={loading || !firstName || age === ""}
+                className="w-full bg-black hover:bg-stone-950 text-white py-3 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-6"
+              >
+                {loading ? "Guardando..." : "Continuar"}
+              </button>
+            </form>
+          )}
         </div>
       </div>
     </div>

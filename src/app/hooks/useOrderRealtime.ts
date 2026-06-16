@@ -27,7 +27,7 @@ interface DishStatusPayload {
 
 interface OrderStatusPayload {
   orderId: string;
-  status: TapPayOrder["status"];
+  status: TapPayOrder["order_status"];
   timestamp: string;
 }
 
@@ -44,7 +44,7 @@ interface UseOrderRealtimeOptions {
   onDishStatusChanged?: (dishId: string, status: DishOrder["status"]) => void;
   onOrderStatusChanged?: (
     orderId: string,
-    status: TapPayOrder["status"]
+    status: TapPayOrder["order_status"]
   ) => void;
   onOrderCompleted?: (order: TapPayOrder) => void;
   onFullRefresh?: () => void;

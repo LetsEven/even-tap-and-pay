@@ -54,8 +54,7 @@ export default function AuthPage() {
   const [otp, setOtp] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [birthDate, setBirthDate] = useState("");
-  const [gender, setGender] = useState("");
+  const [age, setAge] = useState<number | "">("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [countdown, setCountdown] = useState(0);
@@ -305,15 +304,16 @@ export default function AuthPage() {
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (age === "") return;
     setError("");
     setLoading(true);
 
     try {
+      const birthYear = new Date().getUTCFullYear() - Number(age);
       const response = await updateProfile({
         firstName,
         lastName,
-        birthDate,
-        gender: gender as "male" | "female" | "other",
+        birthDate: `${birthYear}-01-01`,
       });
 
       if (response.success) {
@@ -569,52 +569,39 @@ export default function AuthPage() {
                 onChange={(e) => setLastName(e.target.value)}
                 placeholder="Apellido"
                 className="h-[48px] w-full px-3 text-gray-600 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0a8b9b] appearance-none"
-                required
                 disabled={loading}
               />
             </div>
 
-            {/* Birth Date */}
+            {/* Age */}
             <div>
               <label className="block text-sm font-medium text-white mb-1">
-                Fecha de nacimiento
-              </label>
-              <input
-                type="date"
-                value={birthDate}
-                onChange={(e) => setBirthDate(e.target.value)}
-                max={new Date().toISOString().split("T")[0]}
-                className="h-[48px] w-full px-3 text-gray-600 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0a8b9b] appearance-none"
-                disabled={loading}
-                required
-              />
-            </div>
-
-            {/* Gender */}
-            <div>
-              <label className="block text-sm font-medium text-white mb-1">
-                Género
+                Edad
               </label>
               <select
-                value={gender}
-                onChange={(e) => setGender(e.target.value)}
+                required
+                value={age}
+                onChange={(e) =>
+                  setAge(e.target.value === "" ? "" : Number(e.target.value))
+                }
                 className="h-[48px] w-full px-3 text-gray-600 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0a8b9b] cursor-pointer appearance-none"
                 disabled={loading}
-                required
               >
-                <option value="">Selecciona...</option>
-                <option value="male">Masculino</option>
-                <option value="female">Femenino</option>
-                <option value="other">Otro</option>
+                <option value="" disabled>
+                  Selecciona tu edad
+                </option>
+                {Array.from({ length: 59 }, (_, i) => i + 12).map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
               </select>
             </div>
 
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={
-                loading || !firstName || !lastName || !birthDate || !gender
-              }
+              disabled={loading || !firstName || age === ""}
               className="w-full bg-black hover:bg-stone-950 text-white py-3 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-6"
             >
               {loading ? "Guardando..." : "Continuar"}

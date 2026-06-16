@@ -80,7 +80,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
   const { restaurant, params } = useRestaurant();
 
   // Ref para acceder a loadTableData desde los handlers sin dependencias circulares
-  const loadTableDataRef = useRef<() => Promise<void>>();
+  const loadTableDataRef = useRef<(() => Promise<void>) | undefined>(undefined);
 
   // Handlers para eventos de socket en tiempo real
   const handleOrderCreated = useCallback((order: TapPayOrder) => {
@@ -112,11 +112,11 @@ export function TableProvider({ children }: { children: ReactNode }) {
   );
 
   const handleOrderStatusChanged = useCallback(
-    (orderId: string, status: TapPayOrder["status"]) => {
+    (orderId: string, status: TapPayOrder["order_status"]) => {
       console.log("🔔 Real-time: Order status changed", orderId, status);
       setState((prev) => ({
         ...prev,
-        order: prev.order ? { ...prev.order, status } : null,
+        order: prev.order ? { ...prev.order, order_status: status } : null,
       }));
     },
     [],
