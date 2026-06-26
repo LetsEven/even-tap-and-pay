@@ -21,7 +21,7 @@ export default function TipSelectionPage() {
   const amount = searchParams.get("amount");
   const numberOfPeople = searchParams.get("numberOfPeople");
 
-  const [tipPercentage, setTipPercentage] = useState(0);
+  const [tipPercentage, setTipPercentage] = useState(10);
   const [customTip, setCustomTip] = useState("");
   const [customPaymentAmount, setCustomPaymentAmount] = useState("");
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
@@ -243,7 +243,7 @@ export default function TipSelectionPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-dvh bg-linear-to-br from-[#0a8b9b] to-[#153f43] flex flex-col">
+      <div className="min-h-dvh bg-even-evergreen flex flex-col">
         <div
           className="fixed top-0 left-0 right-0 z-50"
           style={{ zIndex: 999 }}
@@ -255,7 +255,7 @@ export default function TipSelectionPage() {
         <div className="w-full flex-1 flex flex-col justify-end">
           <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center">
             <div className="flex flex-col relative px-4 md:px-6 lg:px-8 w-full">
-              <div className="left-4 right-4 bg-linear-to-tl from-[#0a8b9b] to-[#1d727e] rounded-t-4xl translate-y-7 z-0">
+              <div className="left-4 right-4 bg-even-evergreen rounded-t-4xl translate-y-7 z-0">
                 <div className="py-6 md:py-8 lg:py-10 px-8 md:px-10 lg:px-12 flex flex-col justify-center">
                   <h1 className="text-[#e0e0e0] text-xl md:text-2xl lg:text-3xl font-medium">
                     Mesa {tableNumber}
@@ -307,7 +307,7 @@ export default function TipSelectionPage() {
 
   return (
     <div
-      className={`min-h-dvh bg-linear-to-br from-[#0a8b9b] to-[#153f43] flex flex-col ${
+      className={`min-h-dvh bg-even-evergreen flex flex-col ${
         paymentType === "select-items"
           ? "overflow-y-auto overflow-x-hidden"
           : ""
@@ -349,7 +349,7 @@ export default function TipSelectionPage() {
             className={`flex flex-col relative ${paymentType !== "select-items" ? "px-4 md:px-6 lg:px-8 w-full" : ""}`}
           >
             <div
-              className="left-4 right-4 bg-linear-to-tl from-[#0a8b9b] to-[#1d727e] rounded-t-4xl translate-y-7"
+              className="left-4 right-4 bg-even-evergreen rounded-t-4xl translate-y-7"
               style={{ zIndex: 0 }}
             >
               <div className="py-6 md:py-8 lg:py-10 px-8 md:px-10 lg:px-12 flex flex-col justify-center">
@@ -394,7 +394,7 @@ export default function TipSelectionPage() {
                             customPaymentAmount &&
                             parseFloat(customPaymentAmount) > maxAllowedAmount
                               ? "border-red-500 bg-red-50"
-                              : "border-gray-300 focus:border-teal-500"
+                              : "border-gray-300 focus:border-even-grass"
                           }`}
                         />
                       </div>
@@ -431,7 +431,7 @@ export default function TipSelectionPage() {
                           key={dish.id}
                           onClick={() => toggleItemSelection(dish.id)}
                           className={`py-3 md:py-4 lg:py-5 cursor-pointer transition-colors ${
-                            isSelected ? "bg-teal-50" : "hover:bg-gray-50"
+                            isSelected ? "bg-even-grass/10" : "hover:bg-gray-50"
                           }`}
                         >
                           <div className="flex items-center gap-3 justify-between">
@@ -440,7 +440,7 @@ export default function TipSelectionPage() {
                                 <div
                                   className={`w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 rounded-full border-2 flex items-center justify-center ${
                                     isSelected
-                                      ? "border-teal-500 bg-teal-500"
+                                      ? "border-teal-500 bg-even-grass"
                                       : "border-gray-300"
                                   }`}
                                 >
@@ -464,7 +464,8 @@ export default function TipSelectionPage() {
                               <div className="size-12 md:size-14 lg:size-16 bg-gray-300 rounded-sm flex items-center justify-center">
                                 <img
                                   src={
-                                    dish.images[0] || "/logo-short-green.webp"
+                                    dish.images[0] ||
+                                    "/even/even-asterisk-evergreen.svg"
                                   }
                                   alt="Logo Even"
                                   className="w-full h-full object-cover rounded-sm"
@@ -510,10 +511,10 @@ export default function TipSelectionPage() {
                     {/* Pagado */}
                     {paidAmount > 0 && (
                       <div className="flex justify-between items-center">
-                        <span className="text-green-600 font-medium text-base md:text-lg lg:text-xl">
+                        <span className="text-even-shamrock font-medium text-base md:text-lg lg:text-xl">
                           Pagado:
                         </span>
-                        <span className="text-green-600 font-medium text-base md:text-lg lg:text-xl">
+                        <span className="text-even-shamrock font-medium text-base md:text-lg lg:text-xl">
                           ${paidAmount.toFixed(2)} MXN
                         </span>
                       </div>
@@ -522,10 +523,10 @@ export default function TipSelectionPage() {
                     {/* Restante por pagar - solo mostrar si NO es full-bill */}
                     {paymentType !== "full-bill" && (
                       <div className="flex justify-between items-center">
-                        <span className="text-[#eab3f4] font-medium text-base md:text-lg lg:text-xl">
+                        <span className="text-even-grass font-medium text-base md:text-lg lg:text-xl">
                           Restante por pagar:
                         </span>
-                        <span className="text-[#eab3f4] font-medium text-base md:text-lg lg:text-xl">
+                        <span className="text-even-grass font-medium text-base md:text-lg lg:text-xl">
                           ${unpaidAmount.toFixed(2)} MXN
                         </span>
                       </div>
@@ -562,11 +563,11 @@ export default function TipSelectionPage() {
                               handleTipPercentage(percentage);
                               setShowCustomTipInput(false);
                             }}
-                            className={`py-1 md:py-1.5 lg:py-2 rounded-full border border-[#8e8e8e]/40 text-black transition-colors cursor-pointer ${
+                            className={`py-1 md:py-1.5 lg:py-2 rounded-full border border-stroke/40 text-black transition-colors cursor-pointer ${
                               tipPercentage === percentage &&
                               !showCustomTipInput
-                                ? "bg-[#eab3f4] text-white"
-                                : "bg-[#f9f9f9] hover:border-gray-400"
+                                ? "bg-even-grass text-even-evergreen"
+                                : "bg-surface hover:border-gray-400"
                             }`}
                           >
                             {percentage === 0 ? "0%" : `${percentage}%`}
@@ -577,10 +578,10 @@ export default function TipSelectionPage() {
                             setShowCustomTipInput(true);
                             setTipPercentage(0);
                           }}
-                          className={`py-1 md:py-1.5 lg:py-2 rounded-full border border-[#8e8e8e]/40 text-black transition-colors cursor-pointer ${
+                          className={`py-1 md:py-1.5 lg:py-2 rounded-full border border-stroke/40 text-black transition-colors cursor-pointer ${
                             showCustomTipInput
-                              ? "bg-[#eab3f4] text-white"
-                              : "bg-[#f9f9f9] hover:border-gray-400"
+                              ? "bg-even-grass text-even-evergreen"
+                              : "bg-surface hover:border-gray-400"
                           }`}
                         >
                           $
@@ -604,7 +605,7 @@ export default function TipSelectionPage() {
                             step="0.01"
                             min="0"
                             autoFocus
-                            className="w-full pl-8 pr-4 py-1 md:py-1.5 lg:py-2 border border-[#8e8e8e]/40 rounded-full focus:outline-none focus:ring focus:ring-gray-400 focus:border-transparent text-black text-center bg-[#f9f9f9]"
+                            className="w-full pl-8 pr-4 py-1 md:py-1.5 lg:py-2 border rounded-full focus:outline-none focus:ring focus:ring-gray-400 focus:border-transparent text-black text-center bg-surface"
                           />
                         </div>
                       </div>
@@ -612,7 +613,7 @@ export default function TipSelectionPage() {
 
                     {tipAmount > 0 && (
                       <div className="flex justify-end items-center mt-2 text-sm">
-                        <span className="text-[#eab3f4] font-medium">
+                        <span className="text-even-grass font-medium">
                           +${tipAmount.toFixed(2)} MXN
                         </span>
                       </div>
@@ -670,7 +671,7 @@ export default function TipSelectionPage() {
                                 maxAllowedAmount)) ||
                           isUnderMinimum
                         }
-                        className={`rounded-full transition-all px-20 h-10 md:h-12 lg:h-12 flex items-center justify-center text-base md:text-lg lg:text-xl bg-linear-to-r from-[#34808C] to-[#173E44] text-white ${
+                        className={`rounded-full transition-all px-20 h-10 md:h-12 lg:h-12 flex items-center justify-center text-base md:text-lg lg:text-xl bg-even-grass text-even-evergreen ${
                           baseAmount <= 0 ||
                           (paymentType === "choose-amount" &&
                             (!customPaymentAmount ||
@@ -706,20 +707,20 @@ export default function TipSelectionPage() {
               <div className="space-y-2 md:space-y-3 lg:space-y-4">
                 {paidAmount > 0 && (
                   <div className="flex justify-between items-center">
-                    <span className="text-green-600 font-medium text-base md:text-lg lg:text-xl">
+                    <span className="text-even-shamrock font-medium text-base md:text-lg lg:text-xl">
                       Pagado:
                     </span>
-                    <span className="text-green-600 font-medium text-base md:text-lg lg:text-xl">
+                    <span className="text-even-shamrock font-medium text-base md:text-lg lg:text-xl">
                       ${paidAmount.toFixed(2)} MXN
                     </span>
                   </div>
                 )}
 
                 <div className="flex justify-between items-center">
-                  <span className="text-[#eab3f4] font-medium text-base md:text-lg lg:text-xl">
+                  <span className="text-even-grass font-medium text-base md:text-lg lg:text-xl">
                     Restante por pagar:
                   </span>
-                  <span className="text-[#eab3f4] font-medium text-base md:text-lg lg:text-xl">
+                  <span className="text-even-grass font-medium text-base md:text-lg lg:text-xl">
                     ${unpaidAmount.toFixed(2)} MXN
                   </span>
                 </div>
@@ -739,10 +740,10 @@ export default function TipSelectionPage() {
                           handleTipPercentage(percentage);
                           setShowCustomTipInput(false);
                         }}
-                        className={`py-1 md:py-1.5 lg:py-2 rounded-full border border-[#8e8e8e]/40 text-black transition-colors cursor-pointer ${
+                        className={`py-1 md:py-1.5 lg:py-2 rounded-full border border-stroke/40 text-black transition-colors cursor-pointer ${
                           tipPercentage === percentage && !showCustomTipInput
-                            ? "bg-[#eab3f4] text-white"
-                            : "bg-[#f9f9f9] hover:border-gray-400"
+                            ? "bg-even-grass text-even-evergreen"
+                            : "bg-surface hover:border-gray-400"
                         }`}
                       >
                         {percentage === 0 ? "0%" : `${percentage}%`}
@@ -753,10 +754,10 @@ export default function TipSelectionPage() {
                         setShowCustomTipInput(true);
                         setTipPercentage(0);
                       }}
-                      className={`py-1 md:py-1.5 lg:py-2 rounded-full border border-[#8e8e8e]/40 text-black transition-colors cursor-pointer ${
+                      className={`py-1 md:py-1.5 lg:py-2 rounded-full border border-stroke/40 text-black transition-colors cursor-pointer ${
                         showCustomTipInput
-                          ? "bg-[#eab3f4] text-white"
-                          : "bg-[#f9f9f9] hover:border-gray-400"
+                          ? "bg-even-grass text-even-evergreen"
+                          : "bg-surface hover:border-gray-400"
                       }`}
                     >
                       $
@@ -778,7 +779,7 @@ export default function TipSelectionPage() {
                         step="0.01"
                         min="0"
                         autoFocus
-                        className="w-full pl-8 pr-4 py-1 md:py-1.5 lg:py-2 border border-[#8e8e8e]/40 rounded-full focus:outline-none focus:ring focus:ring-gray-400 focus:border-transparent text-black text-center bg-[#f9f9f9]"
+                        className="w-full pl-8 pr-4 py-1 md:py-1.5 lg:py-2 border  rounded-full focus:outline-none focus:ring focus:ring-gray-400 focus:border-transparent text-black text-center bg-surface"
                       />
                     </div>
                   </div>
@@ -786,7 +787,7 @@ export default function TipSelectionPage() {
 
                 {tipAmount > 0 && (
                   <div className="flex justify-end items-center mt-2 text-sm">
-                    <span className="text-[#eab3f4] font-medium text-base md:text-lg lg:text-xl">
+                    <span className="text-even-grass font-medium text-base md:text-lg lg:text-xl">
                       +${tipAmount.toFixed(2)} MXN
                     </span>
                   </div>
@@ -835,7 +836,7 @@ export default function TipSelectionPage() {
                       selectedItems.length === 0 ||
                       isUnderMinimum
                     }
-                    className={`rounded-full h-10 md:h-12 lg:h-12 flex items-center justify-center px-20 text-base md:text-lg lg:text-xl transition-all bg-linear-to-r from-[#34808C] to-[#173E44] text-white ${
+                    className={`rounded-full h-10 md:h-12 lg:h-12 flex items-center justify-center px-20 text-base md:text-lg lg:text-xl transition-all bg-even-grass text-even-evergreen ${
                       baseAmount <= 0 ||
                       selectedItems.length === 0 ||
                       isUnderMinimum
@@ -865,7 +866,7 @@ export default function TipSelectionPage() {
 
           <div className="relative bg-white rounded-t-4xl w-full mx-4 md:mx-6 lg:mx-8">
             <div className="px-6 pt-4 md:px-8 lg:px-10 md:pt-6 lg:pt-8">
-              <div className="flex items-center justify-between pb-4 border-b border-[#8e8e8e]">
+              <div className="flex items-center justify-between pb-4 border-b bg-surfaceborder-stroke">
                 <h3 className="text-lg md:text-xl lg:text-2xl font-semibold text-black">
                   Resumen del total
                 </h3>

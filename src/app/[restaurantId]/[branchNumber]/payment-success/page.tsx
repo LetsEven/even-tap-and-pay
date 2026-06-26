@@ -64,6 +64,25 @@ export default function PaymentSuccessPage() {
     navigateWithTable("/auth");
   };
 
+  useEffect(() => {
+    const prev = {
+      overflow: document.body.style.overflow,
+      position: document.body.style.position,
+      width: document.body.style.width,
+      height: document.body.style.height,
+    };
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.width = "100%";
+    document.body.style.height = "100%";
+    return () => {
+      document.body.style.overflow = prev.overflow;
+      document.body.style.position = prev.position;
+      document.body.style.width = prev.width;
+      document.body.style.height = prev.height;
+    };
+  }, []);
+
   // Bloquear scroll cuando los modales están abiertos
   useEffect(() => {
     if (isTicketModalOpen || isBreakdownModalOpen || isRegisterModalOpen) {
@@ -252,12 +271,12 @@ export default function PaymentSuccessPage() {
   };
 
   return (
-    <div className="min-h-dvh bg-linear-to-br from-[#0a8b9b] to-[#153f43] flex flex-col">
+    <div className="min-h-dvh overflow-hidden bg-even-evergreen flex flex-col">
       {/* Success Icon */}
       <div className="flex-1 flex justify-center items-center">
         <img
-          src="/logos/logo-short-green.webp"
-          alt="Even Logo"
+          src="/even/even-asterisk-grass.svg"
+          alt="Even"
           className="size-20 md:size-28 lg:size-32 animate-logo-fade-in"
         />
       </div>
@@ -266,7 +285,7 @@ export default function PaymentSuccessPage() {
       <div className="px-4 md:px-6 lg:px-8 w-full animate-slide-up">
         <div className="flex-1 flex flex-col">
           {/* Header con gradiente */}
-          <div className="left-4 right-4 bg-linear-to-tl from-[#0a8b9b] to-[#1d727e] rounded-t-4xl translate-y-7 z-0">
+          <div className="left-4 right-4 bg-even-evergreen rounded-t-4xl translate-y-7 z-0">
             <div className="py-6 md:py-8 lg:py-10 px-8 md:px-10 lg:px-12 flex flex-col justify-center items-center mb-6 md:mb-8 lg:mb-10 mt-2 md:mt-4 lg:mt-6 gap-2 md:gap-3 lg:gap-4">
               <h1 className="font-medium text-white text-3xl md:text-4xl lg:text-5xl leading-7 md:leading-9 lg:leading-tight">
                 ¡Gracias por tu pago!
@@ -328,7 +347,7 @@ export default function PaymentSuccessPage() {
                 {rating > 0 && !hasRated && (
                   <button
                     onClick={handleSubmitRating}
-                    className="px-5 md:px-6 py-1.5 md:py-2 bg-linear-to-r from-[#34808C] to-[#173E44] hover:from-[#2a6d77] hover:to-[#12323a] text-white text-sm md:text-base font-medium rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg animate-fade-in"
+                    className="px-5 md:px-6 py-1.5 md:py-2 bg-even-grass text-even-evergreen hover:from-[#2a6d77] hover:to-[#12323a] text-sm md:text-base font-medium rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg animate-fade-in"
                     aria-label="Enviar calificación"
                   >
                     Enviar
@@ -346,7 +365,7 @@ export default function PaymentSuccessPage() {
             >
               <button
                 onClick={handleGoHome}
-                className="w-full text-white py-3 md:py-4 lg:py-5 rounded-full cursor-pointer transition-colors bg-linear-to-r from-[#34808C] to-[#173E44] text-base md:text-lg lg:text-xl"
+                className="w-full py-3 md:py-4 lg:py-5 rounded-full cursor-pointer transition-colors bg-even-grass text-even-evergreen text-base md:text-lg lg:text-xl"
               >
                 Volver a la orden
               </button>
@@ -374,7 +393,7 @@ export default function PaymentSuccessPage() {
           onClick={() => setIsTicketModalOpen(false)}
         >
           <div
-            className="bg-[#173E44]/80 backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] w-full mx-4 md:mx-12 lg:mx-28 rounded-4xl z-999 max-h-[77vh] flex flex-col overflow-hidden"
+            className="bg-even-evergreen/80 backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] w-full mx-4 md:mx-12 lg:mx-28 rounded-4xl z-999 max-h-[77vh] flex flex-col overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header - Fixed */}
@@ -608,7 +627,7 @@ export default function PaymentSuccessPage() {
           <div className="relative bg-white rounded-t-4xl w-full mx-4 md:mx-6 lg:mx-8">
             {/* Titulo */}
             <div className="px-6 md:px-8 lg:px-10 pt-4 md:pt-6 lg:pt-8">
-              <div className="flex items-center justify-between pb-4 md:pb-5 lg:pb-6 border-b border-[#8e8e8e]">
+              <div className="flex items-center justify-between pb-4 md:pb-5 lg:pb-6 border-b border-stroke">
                 <h3 className="text-lg md:text-xl lg:text-2xl font-semibold text-black">
                   Desglose del pago
                 </h3>
@@ -695,7 +714,7 @@ export default function PaymentSuccessPage() {
           onClick={() => setIsRegisterModalOpen(false)}
         >
           <div
-            className="bg-[#173E44]/80 backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] w-full mx-4 md:mx-12 lg:mx-28 rounded-4xl z-999 flex flex-col justify-center py-12 md:py-16 lg:py-20 min-h-[70vh] animate-slide-up"
+            className="bg-even-evergreen/90 backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] w-full mx-4 md:mx-12 lg:mx-28 rounded-4xl z-999 flex flex-col justify-center py-12 md:py-16 lg:py-20 min-h-[70vh] animate-slide-up"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button */}
@@ -711,8 +730,8 @@ export default function PaymentSuccessPage() {
             {/* Logo */}
             <div className="px-6 md:px-8 lg:px-10 flex items-center justify-center mb-6 md:mb-8 lg:mb-10">
               <img
-                src="/logos/logo-short-white.webp"
-                alt="Even Logo"
+                src="/even/even-asterisk-grass.svg"
+                alt="Even"
                 className="size-20 md:size-24 lg:size-28"
               />
             </div>
@@ -734,7 +753,7 @@ export default function PaymentSuccessPage() {
                 onClick={handleSignUp}
                 className="w-full bg-white hover:bg-gray-50 text-black py-4 md:py-5 lg:py-6 px-4 md:px-5 lg:px-6 rounded-xl md:rounded-2xl transition-all duration-200 flex items-center gap-3 md:gap-4 lg:gap-5 active:scale-95"
               >
-                <div className="bg-linear-to-r from-[#34808C] to-[#173E44] p-2 md:p-2.5 lg:p-3 rounded-full group-hover:scale-110 transition-transform">
+                <div className="bg-even-grass text-even-evergreen p-2 md:p-2.5 lg:p-3 rounded-full group-hover:scale-110 transition-transform">
                   <LogIn className="size-5 md:size-6 lg:size-7 text-white" />
                 </div>
                 <div className="flex-1 text-left">

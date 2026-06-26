@@ -16,8 +16,18 @@ import Loader from "@/app/components/UI/Loader";
 import { useAuth } from "@/app/context/AuthContext";
 
 const MONTHS = [
-  "01", "02", "03", "04", "05", "06",
-  "07", "08", "09", "10", "11", "12",
+  "01",
+  "02",
+  "03",
+  "04",
+  "05",
+  "06",
+  "07",
+  "08",
+  "09",
+  "10",
+  "11",
+  "12",
 ];
 const START_YEAR = new Date().getFullYear();
 const YEARS = Array.from(
@@ -246,11 +256,11 @@ function AddCardContent() {
         />
       )}
 
-      <div className="min-h-screen bg-linear-to-br from-[#0a8b9b] to-[#153f43] flex flex-col">
+      <div className="min-h-screen bg-even-evergreen flex flex-col">
         <MenuHeader />
 
         <div className="px-4 md:px-6 lg:px-8 w-full flex-1 flex flex-col justify-end">
-          <div className="left-4 right-4 bg-linear-to-tl from-[#0a8b9b] to-[#1d727e] rounded-t-4xl translate-y-7 z-0">
+          <div className="left-4 right-4 bg-even-evergreen rounded-t-4xl translate-y-7 z-0">
             <div className="pt-6 md:pt-7 lg:pt-8 pb-12 md:pb-14 lg:pb-16 px-8 md:px-10 lg:px-12 flex flex-col justify-center">
               <h2 className="font-medium text-white text-3xl md:text-4xl lg:text-5xl leading-7 mt-2 md:mt-3 lg:mt-4 mb-2 md:mb-3 lg:mb-4">
                 Agrega tu tarjeta para continuar
@@ -298,7 +308,7 @@ function AddCardContent() {
                     onKeyDown={handleKeyDown}
                     autoComplete="cc-name"
                     placeholder="John Doe"
-                    className={`w-full px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5 border text-black rounded-lg focus:outline-none focus:ring focus:ring-teal-500 focus:border-transparent ${errors.fullName ? "border-red-500 bg-red-50" : "border-gray-300"}`}
+                    className={`w-full px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5 border text-black rounded-lg focus:outline-none focus:ring focus:ring-even-grass focus:border-transparent ${errors.fullName ? "border-red-500 bg-red-50" : "border-gray-300"}`}
                   />
                   {errors.fullName && (
                     <p className="text-red-500 text-xs mt-1">
@@ -320,7 +330,7 @@ function AddCardContent() {
                     inputMode="numeric"
                     placeholder="**** 2098"
                     maxLength={19}
-                    className={`w-full px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5 text-black rounded-lg focus:outline-none focus:ring focus:ring-teal-500 focus:border-transparent ${errors.cardNumber ? "border border-red-500 bg-red-50" : "bg-gray-100 border border-gray-200"}`}
+                    className={`w-full px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5 text-black rounded-lg focus:outline-none focus:ring focus:ring-even-grass focus:border-transparent ${errors.cardNumber ? "border border-red-500 bg-red-50" : "bg-gray-100 border border-gray-200"}`}
                   />
                   {errors.cardNumber && (
                     <p className="text-red-500 text-xs mt-1">
@@ -341,7 +351,7 @@ function AddCardContent() {
                         setExpMonthIdx(MONTHS.indexOf(e.target.value))
                       }
                       autoComplete="cc-exp-month"
-                      className="flex-1 px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5 rounded-lg text-black focus:outline-none focus:ring focus:ring-teal-500 focus:border-transparent bg-gray-100 border border-gray-200"
+                      className="flex-1 px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5 rounded-lg text-black focus:outline-none focus:ring focus:ring-even-grass focus:border-transparent bg-gray-100 border border-gray-200"
                     >
                       {MONTHS.map((m) => (
                         <option key={m} value={m}>
@@ -355,7 +365,7 @@ function AddCardContent() {
                         setExpYearIdx(YEARS.indexOf(e.target.value))
                       }
                       autoComplete="cc-exp-year"
-                      className="flex-1 px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5 rounded-lg text-black focus:outline-none focus:ring focus:ring-teal-500 focus:border-transparent bg-gray-100 border border-gray-200"
+                      className="flex-1 px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5 rounded-lg text-black focus:outline-none focus:ring focus:ring-even-grass focus:border-transparent bg-gray-100 border border-gray-200"
                     >
                       {YEARS.map((y) => (
                         <option key={y} value={y}>
@@ -378,7 +388,7 @@ function AddCardContent() {
                     inputMode="numeric"
                     placeholder="123"
                     maxLength={4}
-                    className={`w-full px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5 text-black rounded-lg focus:outline-none focus:ring focus:ring-teal-500 focus:border-transparent ${errors.cvv ? "border border-red-500 bg-red-50" : "border border-gray-300"}`}
+                    className={`w-full px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5 text-black rounded-lg focus:outline-none focus:ring focus:ring-even-grass focus:border-transparent ${errors.cvv ? "border border-red-500 bg-red-50" : "border border-gray-300"}`}
                   />
                   {errors.cvv && (
                     <p className="text-red-500 text-xs mt-1">{errors.cvv}</p>

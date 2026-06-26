@@ -118,11 +118,11 @@ export default function UserPage() {
   }
 
   return (
-    <div className="min-h-dvh bg-linear-to-br from-[#0a8b9b] to-[#153f43] flex flex-col">
+    <div className="min-h-dvh bg-even-evergreen flex flex-col">
       <MenuHeader />
 
       <div className="px-4 md:px-6 lg:px-8 w-full flex-1 flex flex-col">
-        <div className="left-4 right-4 bg-linear-to-tl from-[#0a8b9b] to-[#1d727e] rounded-t-4xl translate-y-7 z-0">
+        <div className="left-4 right-4 bg-even-evergreen rounded-t-4xl translate-y-7 z-0">
           <div className="py-6 md:py-8 lg:py-10 px-8 md:px-10 lg:px-12 flex flex-col justify-center">
             <h2 className="font-medium text-white text-3xl md:text-4xl lg:text-5xl leading-7 md:leading-9 lg:leading-tight mt-2 md:mt-3 mb-6 md:mb-8">
               Ingresa tu nombre para continuar
@@ -148,7 +148,7 @@ export default function UserPage() {
                   onChange={handleNameChange}
                   onKeyDown={handleKeyDown}
                   onFocus={handleInputFocus}
-                  className="w-full px-6 md:px-8 lg:px-10 py-3 md:py-4 lg:py-5 bg-gray-100/90 backdrop-blur-xl rounded-[9999px]! text-black text-xl md:text-2xl lg:text-3xl text-center font-normal placeholder:text-gray-400 focus:outline-none border border-white/80 shadow-[0_2px_8px_rgba(0,0,0,0.06),inset_0_1px_6px_rgba(255,255,255,0.8)] focus:shadow-[0_2px_8px_rgba(0,0,0,0.04),inset_0_0_0_1.2px_rgba(20,184,166,0.5)] transition-shadow"
+                  className="w-full px-6 md:px-8 lg:px-10 py-3 md:py-4 lg:py-5 bg-gray-100/90 backdrop-blur-xl rounded-[9999px]! text-black text-xl md:text-2xl lg:text-3xl text-center font-normal placeholder:text-gray-400 focus:outline-none border border-white/80 shadow-[0_2px_8px_rgba(0,0,0,0.06),inset_0_1px_6px_rgba(255,255,255,0.8)] focus:shadow-[0_2px_8px_rgba(0,0,0,0.04),inset_0_0_0_1.2px_rgba(130,230,87,0.7)] transition-shadow"
                 />
               </div>
             </div>
@@ -162,10 +162,10 @@ export default function UserPage() {
           <button
             onClick={handleProceedToOrder}
             disabled={!userName.trim()}
-            className={`w-full py-4 md:py-5 lg:py-6 rounded-full transition-all text-white cursor-pointer text-base md:text-lg lg:text-xl ${
+            className={`w-full py-4 md:py-5 lg:py-6 rounded-full transition-all text-even-evergreen cursor-pointer text-base md:text-lg lg:text-xl ${
               userName.trim() && !isSubmitting
-                ? "bg-linear-to-r from-[#34808C] to-[#173E44] animate-pulse-button active:scale-95"
-                : "bg-linear-to-r from-[#34808C] to-[#173E44] opacity-50 cursor-not-allowed"
+                ? "bg-even-grass animate-pulse-button active:scale-95"
+                : "bg-even-grass opacity-50 cursor-not-allowed"
             }`}
           >
             {isSubmitting ? (

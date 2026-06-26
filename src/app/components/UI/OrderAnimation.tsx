@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTable } from "../../context/TableContext";
 import { useRestaurant } from "../../context/RestaurantContext";
 import { useTableNavigation } from "@/app/hooks/useTableNavigation";
@@ -26,6 +26,17 @@ const OrderAnimation = ({
   const { state } = useTable();
   const { restaurant } = useRestaurant();
   const { profile } = useAuth();
+
+  const onConfirmRef = useRef(onConfirm);
+  useEffect(() => {
+    onConfirmRef.current = onConfirm;
+  }, [onConfirm]);
+
+  const onContinueRef = useRef(onContinue);
+  useEffect(() => {
+    onContinueRef.current = onContinue;
+  }, [onContinue]);
+
   const [animationState, setAnimationState] = useState<
     "circle" | "content" | "greenCircle" | "success"
   >("circle");
@@ -38,6 +49,25 @@ const OrderAnimation = ({
 
   const userImage = profile?.photoUrl;
   const hasUserImage = !!userImage;
+
+  useEffect(() => {
+    const prev = {
+      overflow: document.body.style.overflow,
+      position: document.body.style.position,
+      width: document.body.style.width,
+      height: document.body.style.height,
+    };
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.width = "100%";
+    document.body.style.height = "100%";
+    return () => {
+      document.body.style.overflow = prev.overflow;
+      document.body.style.position = prev.position;
+      document.body.style.width = prev.width;
+      document.body.style.height = prev.height;
+    };
+  }, []);
 
   // Prevenir recarga de página durante la animación
   useEffect(() => {
@@ -90,9 +120,8 @@ const OrderAnimation = ({
 
     const cancelButtonTimer = setTimeout(() => {
       setShowCancelButton(false);
-      // Confirmar la orden después de que expire el tiempo de cancelación
-      if (onConfirm) {
-        onConfirm();
+      if (onConfirmRef.current) {
+        onConfirmRef.current();
       }
     }, 4000);
 
@@ -123,8 +152,8 @@ const OrderAnimation = ({
   }, []);
 
   const handleContinue = () => {
-    if (onContinue) {
-      onContinue();
+    if (onContinueRef.current) {
+      onContinueRef.current();
     } else {
       navigateWithTable("/order");
     }
@@ -161,8 +190,8 @@ const OrderAnimation = ({
                 {/* Logo container */}
                 <div className="size-20 md:size-24 lg:size-28 flex items-center justify-center rounded-full relative z-10">
                   <img
-                    src="/logos/logo-short-green.webp"
-                    alt="Even Logo"
+                    src="/even/even-asterisk-evergreen.svg"
+                    alt="Even"
                     className="size-14 md:size-16 lg:size-20 grayscale opacity-50"
                   />
                 </div>
@@ -174,14 +203,15 @@ const OrderAnimation = ({
               </div>
 
               {/* Información del pedido */}
-              <div className="flex flex-col w-full divide-y divide-[#8e8e8e]/50">
+              <div className="flex flex-col w-full divide-y divide-stroke/50">
                 {/* Restaurante */}
                 <div className="pb-4 md:pb-6 lg:pb-7">
                   <div className="flex items-center gap-3 md:gap-4">
                     <div className="size-10 md:size-12 lg:size-14 rounded-full border border-gray-400 bg-gray-100 overflow-hidden shrink-0">
                       <img
                         src={
-                          restaurant?.logo_url || "/logos/logo-short-green.webp"
+                          restaurant?.logo_url ||
+                          "/even/even-asterisk-evergreen.svg"
                         }
                         alt={displayRestaurant}
                         className="object-cover w-full h-full"
@@ -208,7 +238,7 @@ const OrderAnimation = ({
                         className="size-10 md:size-12 lg:size-14 rounded-full object-cover border border-gray-400 shrink-0"
                       />
                     ) : (
-                      <div className="size-10 md:size-12 lg:size-14 rounded-full border border-gray-400 bg-linear-to-br from-[#0a8b9b] to-[#153f43] flex items-center justify-center shrink-0">
+                      <div className="size-10 md:size-12 lg:size-14 rounded-full border border-gray-400 bg-even-evergreen flex items-center justify-center shrink-0">
                         <span className="text-white text-base md:text-lg lg:text-xl font-bold">
                           {displayName.charAt(0).toUpperCase()}
                         </span>
@@ -246,8 +276,8 @@ const OrderAnimation = ({
                               />
                             ) : (
                               <img
-                                src="/logos/logo-short-green.webp"
-                                alt="Logo Even"
+                                src="/even/even-asterisk-evergreen.svg"
+                                alt="Even"
                                 className="size-6 md:size-8 lg:size-10 object-contain"
                               />
                             )}
@@ -287,7 +317,7 @@ const OrderAnimation = ({
                 >
                   <button
                     onClick={handleCancel}
-                    className="py-1 md:py-1.5 px-6 md:px-8 text-black rounded-full active:scale-95 transition-all font-medium text-sm md:text-base bg-[#f9f9f9] lg:py-2 border border-[#8e8e8e]/40 cursor-pointer"
+                    className="py-1 md:py-1.5 px-6 md:px-8 text-black rounded-full active:scale-95 transition-all font-medium text-sm md:text-base bg-surface lg:py-2 border border-stroke/40 cursor-pointer"
                   >
                     Cancelar pago
                   </button>
@@ -311,14 +341,14 @@ const OrderAnimation = ({
 
       {/* Success screen */}
       {animationState === "success" && (
-        <div className="fixed inset-0 z-9999 bg-green-500 overflow-hidden">
+        <div className="fixed inset-0 z-9999 bg-even-grass overflow-hidden">
           <div className="h-dvh p-8 flex flex-col">
             <div className="flex flex-col flex-1">
               {/* Checkmark */}
               <div className="mb-6 md:mb-8 lg:mb-10 mt-8 md:mt-12 lg:mt-14 animate-simple-fade-in">
                 <div className="size-20 md:size-24 lg:size-28 rounded-full bg-white flex items-center justify-center">
                   <svg
-                    className="size-14 md:size-16 lg:size-20 text-green-500"
+                    className="size-14 md:size-16 lg:size-20 text-even-evergreen"
                     fill="none"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -332,7 +362,7 @@ const OrderAnimation = ({
               </div>
 
               {/* Success message */}
-              <div className="text-white text-3xl md:text-5xl lg:text-6xl font-medium mb-8 md:mb-12 lg:mb-14 mr-16 md:mr-28 lg:mr-32 animate-simple-fade-in">
+              <div className="text-even-evergreen text-3xl md:text-5xl lg:text-6xl font-medium mb-8 md:mb-12 lg:mb-14 mr-16 md:mr-28 lg:mr-32 animate-simple-fade-in">
                 Tu pago fue procesado con éxito
               </div>
             </div>

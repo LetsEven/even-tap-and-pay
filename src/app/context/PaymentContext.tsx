@@ -179,8 +179,7 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
   };
 
   const deletePaymentMethod = async (paymentMethodId: string) => {
-    // Only registered users can delete saved payment methods
-    if (!user) {
+    if (!user && !isGuest) {
       throw new Error("Debes estar autenticado para eliminar tarjetas");
     }
 

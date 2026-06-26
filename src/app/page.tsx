@@ -70,15 +70,15 @@ export default function Home() {
   }, [router, searchParams, isAuthenticated, isLoading]);
 
   return (
-    <div className="min-h-dvh bg-linear-to-br from-[#0a8b9b] to-[#153f43] flex flex-col">
+    <div className="min-h-dvh bg-even-evergreen flex flex-col">
       <div className="flex-1 flex flex-col items-center justify-center px-5 md:px-8 lg:px-10 pb-12 md:py-10 lg:py-12">
         <div className="w-full max-w-md">
           {/* Logo and QR Code side by side */}
           <div className="mb-6 md:mb-8 lg:mb-10 text-center">
             <div className="flex items-center justify-center gap-4 md:gap-6 lg:gap-8 mb-4 md:mb-5 lg:mb-6">
               <img
-                src="/logos/logo-short-green.webp"
-                alt="Even Logo"
+                src="/even/even-asterisk-grass.svg"
+                alt="Even"
                 className="size-16 md:size-20 lg:size-24"
               />
             </div>

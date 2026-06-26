@@ -1,42 +1,58 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fefeeb;
+  --foreground: #023828;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-helvetica-neue);
-  --color-primary: #173e44;
-}
+  --font-sans: var(--font-dm-mono);
+  --font-mono: var(--font-dm-mono);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Even brand tokens */
+  --color-even-evergreen: #023828;
+  --color-even-grass: #82e657;
+  --color-even-shamrock: #299e66;
+  --color-even-aqua: #c3feff;
+  --color-even-offwhite: #fefeeb;
+  --color-even-ink: #141512;
+
+  /* UI grays */
+  --color-surface: #f9f9f9;
+  --color-stroke: #8e8e8e;
+  --color-stroke-soft: #bfbfbf;
+  --color-muted: #6b7280;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family:
-    var(--font-helvetica-neue),
-    -apple-system,
-    BlinkMacSystemFont,
-    sans-serif;
+    var(--font-dm-mono),
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+}
+
+h1,
+h2 {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  letter-spacing: -0.015em;
 }
 
 /* Ocultar scrollbar pero mantener funcionalidad de scroll */
 .scrollbar-hide {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-  display: none; /* Chrome, Safari and Opera */
+  display: none;
 }
 
 /* Toast fade in/out animation */
@@ -130,12 +146,10 @@ body {
   }
 }
 
+/* Fixed: starts fully opaque at tiny scale — avoids blend with white background */
 @keyframes expand-green-from-logo {
   0% {
-    transform: scale(1);
-    opacity: 0;
-  }
-  5% {
+    transform: scale(0.01);
     opacity: 1;
   }
   100% {
@@ -178,7 +192,7 @@ body {
 .green-circle-from-logo {
   width: 96px;
   height: 96px;
-  background: rgb(34 197 94);
+  background: #82e657;
   border-radius: 50%;
   transform-origin: center center;
   will-change: transform;
@@ -210,6 +224,17 @@ body {
   animation-delay: 1.2s;
 }
 
+/* Asterisk spinner (RS pattern) */
+@keyframes asterisk-spin-steps {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.asterisk-spin {
+  animation: asterisk-spin-steps 1.8s steps(6, end) infinite;
+}
+
 /* Payment success animations */
 @keyframes slide-up {
   0% {
@@ -239,6 +264,29 @@ body {
 
 .animate-logo-fade-in {
   animation: logo-fade-in 0.8s ease-out forwards;
+}
+
+/* Modal slide animations */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDownModal {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+.animate-slide-up-modal {
+  animation: slideUp 0.38s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .animated_checkmark svg {
@@ -297,6 +345,7 @@ body {
     stroke-dashoffset: 900;
   }
 }
+
 @keyframes fadeInText {
   0% {
     opacity: 0;
@@ -337,7 +386,7 @@ body {
   .myradio {
     @apply w-4 h-4 bg-gray-100 border border-gray-300 rounded-full cursor-pointer;
     @apply focus:outline-none;
-    @apply checked:bg-[#eab3f4] checked:border-transparent;
+    @apply checked:bg-even-grass checked:border-transparent;
     @apply appearance-none relative;
   }
 
@@ -349,13 +398,13 @@ body {
 
 @keyframes pulse-button {
   0% {
-    box-shadow: 0 0 0 0 rgba(52, 128, 140, 0.7);
+    box-shadow: 0 0 0 0 rgba(130, 230, 87, 0.7);
   }
   70% {
-    box-shadow: 0 0 0 10px rgba(52, 128, 140, 0);
+    box-shadow: 0 0 0 10px rgba(130, 230, 87, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(52, 128, 140, 0);
+    box-shadow: 0 0 0 0 rgba(130, 230, 87, 0);
   }
 }
 
@@ -395,7 +444,7 @@ textarea {
   -moz-appearance: none;
   appearance: none;
   border-radius: 0.5rem;
-  font-size: 16px; /* Previene zoom en iOS */
+  font-size: 16px;
 }
 
 input[type="date"] {
@@ -408,4 +457,19 @@ select {
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
   padding-right: 2.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .asterisk-spin,
+  .animate-pulse-button,
+  .animate-bounce-in,
+  .circle-animation,
+  .green-circle-from-logo,
+  .pulse-ring,
+  .animate-fade-in,
+  .animate-simple-fade-in,
+  .animate-slide-up,
+  .animate-logo-fade-in {
+    animation: none;
+  }
 }

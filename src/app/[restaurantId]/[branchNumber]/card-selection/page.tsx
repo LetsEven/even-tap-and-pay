@@ -93,6 +93,9 @@ export default function CardSelectionPage() {
     paymentType: string;
   } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorTitle, setErrorTitle] = useState<string>(
+    "Error al procesar el pago",
+  );
 
   // Apple Pay
   const [applePayReady, setApplePayReady] = useState(false);
@@ -685,7 +688,8 @@ export default function CardSelectionPage() {
         setSelectedPaymentMethodId(null);
       }
     } catch (error) {
-      setErrorMessage("Error al eliminar el método de pago. Intenta de nuevo.");
+      setErrorTitle("Error al eliminar la tarjeta");
+      setErrorMessage("No se pudo eliminar la tarjeta. Intenta de nuevo.");
     } finally {
       setDeletingCardId(null);
     }
@@ -708,7 +712,7 @@ export default function CardSelectionPage() {
 
   if (isLoadingInitial || authLoading) {
     return (
-      <div className="min-h-dvh bg-linear-to-br from-[#0a8b9b] to-[#153f43] flex flex-col">
+      <div className="min-h-dvh bg-even-evergreen flex flex-col">
         <div
           className="fixed top-0 left-0 right-0 z-50"
           style={{ zIndex: 999 }}
@@ -749,37 +753,43 @@ export default function CardSelectionPage() {
         />
       )}
 
-      <div className="min-h-dvh bg-linear-to-br from-[#0a8b9b] to-[#153f43] flex flex-col">
-        {/* Fixed Header */}
-        <div
-          className="fixed top-0 left-0 right-0 z-50"
-          style={{ zIndex: 999 }}
-        >
-          <div className={isAnimatingOut ? "animate-fade-out" : ""}>
-            <MenuHeader />
-          </div>
+      <div className="min-h-dvh bg-even-evergreen flex flex-col">
+        {/* Header */}
+        <div className={isAnimatingOut ? "animate-fade-out" : ""}>
+          <MenuHeader />
         </div>
 
-        {/* Spacer for fixed header */}
-        <div className="h-20"></div>
-
+        {/* Contenido scrolleable */}
         <div
-          className={`w-full flex-1 flex flex-col justify-end ${isAnimatingOut ? "animate-slide-down" : ""}`}
+          className={`px-4 md:px-6 lg:px-8 w-full flex-1 flex flex-col ${isAnimatingOut ? "animate-slide-down" : ""}`}
         >
-          <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center">
-            <div className="flex flex-col relative mx-4 md:mx-6 lg:mx-8 w-full">
-              <div className="left-4 right-4 bg-linear-to-tl from-[#0a8b9b] to-[#1d727e] rounded-t-4xl translate-y-7 z-0">
-                <div className="py-6 md:py-8 lg:py-10 px-8 md:px-10 lg:px-12 flex flex-col justify-center">
-                  <h1 className="font-medium text-white text-3xl md:text-4xl lg:text-5xl leading-7 md:leading-9 lg:leading-tight mt-2 md:mt-3 mb-6 md:mb-8">
-                    Selecciona tu método de pago
-                  </h1>
-                </div>
-              </div>
+          <div className="bg-even-evergreen rounded-t-4xl translate-y-7 z-0">
+            <div className="py-6 md:py-8 lg:py-10 px-8 md:px-10 lg:px-12 flex flex-col justify-center">
+              <h1 className="font-medium text-white text-3xl md:text-4xl lg:text-5xl leading-7 md:leading-9 lg:leading-tight mt-2 md:mt-3 mb-6 md:mb-8">
+                Selecciona tu método de pago
+              </h1>
+            </div>
+          </div>
 
-              <div className="bg-white rounded-t-4xl relative z-10 flex flex-col px-6 md:px-8 lg:px-10 flex-1 py-8 md:py-10 lg:py-12">
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="bg-white rounded-t-4xl flex-1 flex flex-col px-6 md:px-8 lg:px-10 overflow-hidden z-10">
+              <div className="flex-1 overflow-y-auto py-8 pb-[120px]">
                 {/* Payment Summary */}
+                <div className="mb-3 space-y-2">
+                  <div className="flex justify-between items-center text-base font-medium text-black">
+                    <span>Subtotal</span>
+                    <span>${baseAmount.toFixed(2)} MXN</span>
+                  </div>
+                  {tipAmount > 0 && (
+                    <div className="flex justify-between items-center text-base font-medium text-black">
+                      <span>Propina</span>
+                      <span>${tipAmount.toFixed(2)} MXN</span>
+                    </div>
+                  )}
+                </div>
+
                 <div className="space-y-2 mb-6">
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center border-t pt-2">
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-black text-base md:text-lg lg:text-xl">
                         Total a pagar
@@ -823,7 +833,7 @@ export default function CardSelectionPage() {
                           <div
                             className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
                               selectedMSI !== null
-                                ? "border-[#eab3f4] bg-[#eab3f4]"
+                                ? "border-even-grass bg-even-grass"
                                 : "border-gray-300"
                             }`}
                           >
@@ -838,15 +848,18 @@ export default function CardSelectionPage() {
                 </div>
 
                 {/* Saved Cards List */}
-                <div>
-                  <div className="space-y-2.5 mb-2.5">
+                <div className="mb-2.5">
+                  <h3 className="text-black font-medium mb-3">
+                    Métodos de pago
+                  </h3>
+                  <div className="space-y-2.5">
                     {allPaymentMethods.map((method) => (
                       <div
                         key={method.id}
                         className={`flex items-center py-1.5 px-5 pl-10 border rounded-full transition-colors ${
                           selectedPaymentMethodId === method.id
-                            ? "border-teal-500 bg-teal-50"
-                            : "border-black/50 bg-[#f9f9f9]"
+                            ? "border-even-grass bg-even-grass/10"
+                            : "border-black/50 bg-surface"
                         }`}
                       >
                         <div
@@ -865,7 +878,7 @@ export default function CardSelectionPage() {
                           onClick={() => setSelectedPaymentMethodId(method.id)}
                           className={`w-4 h-4 rounded-full border-2 cursor-pointer ${
                             selectedPaymentMethodId === method.id
-                              ? "border-teal-500 bg-teal-500"
+                              ? "border-even-grass bg-even-grass"
                               : "border-gray-300"
                           }`}
                         >
@@ -958,44 +971,46 @@ export default function CardSelectionPage() {
                   </div>
                 </div>
 
-                {/* Payment Method Section */}
-                <div>
+                {/* Agregar tarjeta */}
+                <div className="mb-2.5">
                   <button
                     onClick={handleAddCard}
-                    className="border border-black/50 flex justify-center items-center gap-1 w-full text-black py-3 rounded-full cursor-pointer transition-colors bg-[#f9f9f9] hover:bg-gray-100 text-base md:text-lg lg:text-xl"
+                    className="border border-black/50 flex justify-center items-center gap-1 w-full text-black py-3 rounded-full cursor-pointer transition-colors bg-surface hover:bg-gray-100 text-base md:text-lg lg:text-xl"
                   >
                     <Plus className="size-5" />
                     Agregar método de pago
                   </button>
                 </div>
-
-                {/* Bottom section with button */}
-                <div className="pt-4">
-                  {/* Pay Button */}
-                  <button
-                    onClick={handlePayment}
-                    disabled={isProcessing || !selectedPaymentMethodId}
-                    className={`w-full text-white py-3 rounded-full cursor-pointer transition-colors text-base md:text-lg lg:text-xl active:scale-90 ${
-                      isProcessing || !selectedPaymentMethodId
-                        ? "bg-linear-to-r from-[#34808C] to-[#173E44] opacity-50 cursor-not-allowed"
-                        : "bg-linear-to-r from-[#34808C] to-[#173E44] animate-pulse-button"
-                    }`}
-                  >
-                    {isProcessing ? (
-                      <div className="flex items-center justify-center gap-2 md:gap-3">
-                        <Loader2 className="size-5 animate-spin" />
-                        <span>Procesando...</span>
-                      </div>
-                    ) : !selectedPaymentMethodId ? (
-                      "Selecciona una tarjeta"
-                    ) : (
-                      "Pagar"
-                    )}
-                  </button>
-                </div>
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Barra inferior fija — botón pagar */}
+        <div
+          className="fixed bottom-0 left-0 right-0 bg-white mx-4 px-8 z-90 py-6 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"
+          style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
+        >
+          <button
+            onClick={handlePayment}
+            disabled={isProcessing || !selectedPaymentMethodId}
+            className={`w-full py-3 text-even-evergreen rounded-full cursor-pointer transition-colors text-base md:text-lg lg:text-xl active:scale-90 ${
+              isProcessing || !selectedPaymentMethodId
+                ? "bg-even-grass opacity-50 cursor-not-allowed"
+                : "bg-even-grass animate-pulse-button"
+            }`}
+          >
+            {isProcessing ? (
+              <div className="flex items-center justify-center gap-2 md:gap-3">
+                <Loader2 className="size-5 animate-spin" />
+                <span>Procesando...</span>
+              </div>
+            ) : !selectedPaymentMethodId ? (
+              "Selecciona una tarjeta"
+            ) : (
+              "Pagar"
+            )}
+          </button>
         </div>
 
         {/* Modal de resumen del total */}
@@ -1014,7 +1029,7 @@ export default function CardSelectionPage() {
             <div className="relative bg-white rounded-t-4xl w-full mx-4">
               {/* Titulo */}
               <div className="px-6 pt-4">
-                <div className="flex items-center justify-between pb-4 border-b border-[#8e8e8e]">
+                <div className="flex items-center justify-between pb-4 border-b border-stroke">
                   <h3 className="text-lg font-semibold text-black">
                     Resumen del total
                   </h3>
@@ -1079,7 +1094,7 @@ export default function CardSelectionPage() {
             <div className="relative bg-white rounded-t-4xl w-full mx-4 max-h-[80vh] overflow-y-auto">
               {/* Titulo */}
               <div className="px-6 pt-4 sticky top-0 bg-white z-10">
-                <div className="flex items-center justify-between pb-4 border-b border-[#8e8e8e]">
+                <div className="flex items-center justify-between pb-4 border-b border-stroke">
                   <h3 className="text-lg font-semibold text-black">
                     Opciones de pago
                   </h3>
@@ -1110,8 +1125,8 @@ export default function CardSelectionPage() {
                         onClick={() => setSelectedMSI(null)}
                         className={`py-2 px-5 border rounded-full cursor-pointer transition-colors ${
                           selectedMSI === null
-                            ? "border-teal-500 bg-teal-50"
-                            : "border-black/50 bg-[#f9f9f9] hover:border-gray-400"
+                            ? "border-even-grass bg-even-grass/10"
+                            : "border-black/50 bg-surface hover:border-gray-400"
                         }`}
                       >
                         <div className="flex items-center justify-between">
@@ -1126,7 +1141,7 @@ export default function CardSelectionPage() {
                           <div
                             className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
                               selectedMSI === null
-                                ? "border-teal-500 bg-teal-500"
+                                ? "border-even-grass bg-even-grass"
                                 : "border-gray-300"
                             }`}
                           >
@@ -1173,8 +1188,8 @@ export default function CardSelectionPage() {
                                   onClick={() => setSelectedMSI(option.months)}
                                   className={`py-2 px-5 border rounded-full cursor-pointer transition-colors ${
                                     selectedMSI === option.months
-                                      ? "border-teal-500 bg-teal-50"
-                                      : "border-black/50 bg-[#f9f9f9] hover:border-gray-400"
+                                      ? "border-even-grass bg-even-grass/10"
+                                      : "border-black/50 bg-surface hover:border-gray-400"
                                   }`}
                                 >
                                   <div className="flex items-center justify-between">
@@ -1191,7 +1206,7 @@ export default function CardSelectionPage() {
                                     <div
                                       className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
                                         selectedMSI === option.months
-                                          ? "border-teal-500 bg-teal-500"
+                                          ? "border-even-grass bg-even-grass"
                                           : "border-gray-300"
                                       }`}
                                     >
@@ -1223,7 +1238,7 @@ export default function CardSelectionPage() {
               <div className="px-6 py-4 border-t border-gray-200 sticky bottom-0 bg-white">
                 <button
                   onClick={() => setShowPaymentOptionsModal(false)}
-                  className="w-full bg-linear-to-r from-[#34808C] to-[#173E44] text-white py-3 rounded-full cursor-pointer transition-colors text-base"
+                  className="w-full bg-even-grass text-even-evergreen py-3 rounded-full cursor-pointer transition-colors text-base"
                 >
                   Confirmar
                 </button>
@@ -1237,7 +1252,10 @@ export default function CardSelectionPage() {
       {errorMessage && (
         <div
           className="fixed inset-0 z-99999 flex items-end justify-center bg-black/50"
-          onClick={() => setErrorMessage(null)}
+          onClick={() => {
+            setErrorMessage(null);
+            setErrorTitle("Error al procesar el pago");
+          }}
         >
           <div
             className="bg-white rounded-t-4xl w-full shadow-xl"
@@ -1252,19 +1270,22 @@ export default function CardSelectionPage() {
                   />
                 </div>
                 <h2 className="text-xl font-semibold text-black text-center">
-                  Error al procesar el pago
+                  {errorTitle}
                 </h2>
               </div>
 
-              <div className="bg-[#f9f9f9] border border-[#bfbfbf]/50 rounded-xl p-4 mb-6">
+              <div className="bg-surface border border-stroke-soft/50 rounded-xl p-4 mb-6">
                 <p className="text-gray-700 text-sm text-center">
                   {errorMessage}
                 </p>
               </div>
 
               <button
-                onClick={() => setErrorMessage(null)}
-                className="w-full bg-linear-to-r from-[#34808C] to-[#173E44] text-white py-3 rounded-full text-base"
+                onClick={() => {
+                  setErrorMessage(null);
+                  setErrorTitle("Error al procesar el pago");
+                }}
+                className="w-full bg-even-grass text-even-evergreen py-3 rounded-full text-base"
               >
                 Intentar de nuevo
               </button>
